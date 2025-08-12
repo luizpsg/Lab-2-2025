@@ -14,6 +14,7 @@ public class UDPClient {
     DatagramSocket aSocket = null;
     int serverPort = 6789;
     String message;
+    // String message2 = "luizpaulo";
 
     try {
       aSocket = new DatagramSocket();

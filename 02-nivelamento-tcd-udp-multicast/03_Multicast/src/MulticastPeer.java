@@ -1,12 +1,14 @@
-package redes;
-
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.MulticastSocket;
+import java.net.SocketException;
 
 public class MulticastPeer {
   public static void main(String args[]) throws IOException {
 
-    // args prov� o conte�do da mensagem e o endere�o do grupo multicast (p. ex.
+    // args provê o conteúdo da mensagem e o endereço do grupo multicast (p. ex.
     // "228.5.6.7")
 
     int port = 6789;
