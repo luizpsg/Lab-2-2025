@@ -1,0 +1,3 @@
+{"error":"SQLITE_ERROR: Cannot add a column with non-constant default","level":"error","message":"Database migration failed","service":"task-management-api","timestamp":"2025-08-22 02:29:28"}
+{"error":"SQLITE_ERROR: Cannot add a column with non-constant default","level":"error","message":"Database migration failed","service":"task-management-api","timestamp":"2025-08-22 02:30:57"}
+{"error":"SQLITE_ERROR: Cannot add a column with non-constant default","level":"error","message":"Database migration failed","service":"task-management-api","timestamp":"2025-08-22 02:31:00"}

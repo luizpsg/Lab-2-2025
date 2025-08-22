@@ -10,6 +10,7 @@ class User {
     this.password = data.password;
     this.firstName = data.firstName;
     this.lastName = data.lastName;
+    this.role = data.role || "user";
     this.createdAt = data.createdAt;
   }
 
@@ -23,10 +24,32 @@ class User {
 
   generateToken() {
     return jwt.sign(
-      { id: this.id, email: this.email, username: this.username },
+      {
+        id: this.id,
+        email: this.email,
+        username: this.username,
+        role: this.role
+      },
       config.jwtSecret,
       { expiresIn: config.jwtExpiration }
     );
+  }
+
+  // Verificar se o usuário tem uma determinada role
+  hasRole(role) {
+    if (this.role === 'admin') return true; // Admin tem acesso a tudo
+    return this.role === role;
+  }
+
+  // Verificar se o usuário tem pelo menos uma das roles especificadas
+  hasAnyRole(roles) {
+    if (this.role === 'admin') return true;
+    return Array.isArray(roles) ? roles.includes(this.role) : roles === this.role;
+  }
+
+  // Verificar se o usuário é premium
+  isPremium() {
+    return this.role === 'premium' || this.role === 'admin';
   }
 
   toJSON() {

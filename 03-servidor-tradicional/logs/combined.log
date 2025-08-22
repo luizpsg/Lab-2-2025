@@ -1,0 +1,18 @@
+{"level":"info","message":"Database migration: added role column to users table","service":"task-management-api","timestamp":"2025-08-22 02:29:28"}
+{"level":"info","message":"Database migration: added category column to tasks table","service":"task-management-api","timestamp":"2025-08-22 02:29:28"}
+{"level":"info","message":"Database migration: added tags column to tasks table","service":"task-management-api","timestamp":"2025-08-22 02:29:28"}
+{"level":"info","message":"Database migration: added dueDate column to tasks table","service":"task-management-api","timestamp":"2025-08-22 02:29:28"}
+{"level":"info","message":"Database migration: added estimatedTime column to tasks table","service":"task-management-api","timestamp":"2025-08-22 02:29:28"}
+{"level":"info","message":"Database migration: added actualTime column to tasks table","service":"task-management-api","timestamp":"2025-08-22 02:29:28"}
+{"level":"info","message":"Database migration: added notes column to tasks table","service":"task-management-api","timestamp":"2025-08-22 02:29:28"}
+{"error":"SQLITE_ERROR: Cannot add a column with non-constant default","level":"error","message":"Database migration failed","service":"task-management-api","timestamp":"2025-08-22 02:29:28"}
+{"error":"SQLITE_ERROR: Cannot add a column with non-constant default","level":"error","message":"Database migration failed","service":"task-management-api","timestamp":"2025-08-22 02:30:57"}
+{"error":"SQLITE_ERROR: Cannot add a column with non-constant default","level":"error","message":"Database migration failed","service":"task-management-api","timestamp":"2025-08-22 02:31:00"}
+{"level":"info","message":"Database migration: added updatedAt column to tasks table","service":"task-management-api","timestamp":"2025-08-22 02:31:27"}
+{"environment":"development","level":"info","message":"Server started successfully","port":3000,"service":"task-management-api","timestamp":"2025-08-22 02:31:27","version":"2.0.0"}
+{"environment":"development","level":"info","message":"Server started successfully","port":3000,"service":"task-management-api","timestamp":"2025-08-22 02:31:32","version":"2.0.0"}
+{"environment":"development","level":"info","message":"Server started successfully","port":3000,"service":"task-management-api","timestamp":"2025-08-22 02:31:43","version":"2.0.0"}
+{"environment":"development","level":"info","message":"Server started successfully","port":3000,"service":"task-management-api","timestamp":"2025-08-22 02:31:49","version":"2.0.0"}
+{"duration":"3ms","ip":"::1","level":"info","message":"Request processed","method":"GET","service":"task-management-api","statusCode":200,"timestamp":"2025-08-22 02:31:53","url":"/health","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.4768","userId":"anonymous"}
+{"duration":"0ms","ip":"::1","level":"info","message":"Request processed","method":"GET","service":"task-management-api","statusCode":200,"timestamp":"2025-08-22 02:31:58","url":"/","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.4768","userId":"anonymous"}
+{"level":"info","message":"SIGINT received, shutting down gracefully","service":"task-management-api","timestamp":"2025-08-22 02:32:13"}
