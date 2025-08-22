@@ -1,0 +1,31 @@
+{
+  "name": "testes-estresse-seguranca",
+  "version": "1.0.0",
+  "description": "Testes de estresse e segurança para Task Management API",
+  "main": "estresse_seguranca.js",
+  "scripts": {
+    "test": "node estresse_seguranca.js",
+    "test:light": "node estresse_seguranca.js --light",
+    "test:heavy": "node estresse_seguranca.js --heavy",
+    "test:security": "node estresse_seguranca.js --security-only",
+    "test:performance": "node estresse_seguranca.js --performance-only"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "perf_hooks": "^0.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "teste",
+    "estresse",
+    "segurança",
+    "rate-limiting",
+    "ddos",
+    "sql-injection",
+    "xss"
+  ],
+  "author": "Task Management API Team",
+  "license": "MIT"
+}
