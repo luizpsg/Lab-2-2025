@@ -1,0 +1,95 @@
+syntax = "proto3";
+
+package chat;
+
+service ChatService {
+  // Streaming bidirecional para chat em tempo real
+  rpc Chat(stream ChatMessage) returns (stream ChatMessage);
+  
+  // Obter histórico de mensagens
+  rpc GetChatHistory(GetChatHistoryRequest) returns (GetChatHistoryResponse);
+  
+  // Entrar em uma sala de chat
+  rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+  
+  // Sair de uma sala de chat
+  rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
+  
+  // Listar salas disponíveis
+  rpc ListRooms(ListRoomsRequest) returns (ListRoomsRequest);
+}
+
+enum MessageType {
+  TEXT = 0;
+  IMAGE = 1;
+  FILE = 2;
+  SYSTEM = 3;
+  TYPING = 4;
+  USER_JOINED = 5;
+  USER_LEFT = 6;
+}
+
+message ChatMessage {
+  string id = 1;
+  string room_id = 2;
+  string user_id = 3;
+  string username = 4;
+  string content = 5;
+  MessageType type = 6;
+  int64 timestamp = 7;
+  map<string, string> metadata = 8;
+}
+
+message GetChatHistoryRequest {
+  string token = 1;
+  string room_id = 2;
+  int32 limit = 3;
+  string cursor = 4; // Para paginação
+}
+
+message GetChatHistoryResponse {
+  bool success = 1;
+  repeated ChatMessage messages = 2;
+  string next_cursor = 3;
+  string message = 4;
+}
+
+message JoinRoomRequest {
+  string token = 1;
+  string room_id = 2;
+}
+
+message JoinRoomResponse {
+  bool success = 1;
+  string message = 2;
+  string room_id = 3;
+}
+
+message LeaveRoomRequest {
+  string token = 1;
+  string room_id = 2;
+}
+
+message LeaveRoomResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message ListRoomsRequest {
+  string token = 1;
+}
+
+message ListRoomsResponse {
+  bool success = 1;
+  repeated Room rooms = 2;
+  string message = 3;
+}
+
+message Room {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  int32 user_count = 4;
+  int64 created_at = 5;
+  bool is_private = 6;
+}

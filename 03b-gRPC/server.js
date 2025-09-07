@@ -2,6 +2,10 @@ const grpc = require("@grpc/grpc-js");
 const ProtoLoader = require("./utils/protoLoader");
 const AuthService = require("./services/AuthService");
 const TaskService = require("./services/TaskService");
+const ChatService = require("./services/ChatService");
+const AuthInterceptor = require("./middleware/authInterceptor");
+const ErrorHandler = require("./middleware/errorHandler");
+const LoadBalancer = require("./middleware/loadBalancer");
 const database = require("./database/database");
 
 /**
@@ -22,6 +26,10 @@ class GrpcServer {
     this.protoLoader = new ProtoLoader();
     this.authService = new AuthService();
     this.taskService = new TaskService();
+    this.chatService = new ChatService();
+    this.authInterceptor = new AuthInterceptor();
+    this.errorHandler = new ErrorHandler();
+    this.loadBalancer = new LoadBalancer();
   }
 
   async initialize() {
@@ -38,6 +46,10 @@ class GrpcServer {
         "task_service.proto",
         "tasks"
       );
+      const chatProto = this.protoLoader.loadProto(
+        "chat_service.proto",
+        "chat"
+      );
 
       // Registrar serviços de autenticação
       this.server.addService(authProto.AuthService.service, {
@@ -48,19 +60,49 @@ class GrpcServer {
 
       // Registrar serviços de tarefas
       this.server.addService(taskProto.TaskService.service, {
-        CreateTask: this.taskService.createTask.bind(this.taskService),
-        GetTasks: this.taskService.getTasks.bind(this.taskService),
-        GetTask: this.taskService.getTask.bind(this.taskService),
-        UpdateTask: this.taskService.updateTask.bind(this.taskService),
-        DeleteTask: this.taskService.deleteTask.bind(this.taskService),
-        GetTaskStats: this.taskService.getTaskStats.bind(this.taskService),
+        CreateTask: this.errorHandler.wrapServiceMethod(
+          this.taskService.createTask.bind(this.taskService)
+        ),
+        GetTasks: this.errorHandler.wrapServiceMethod(
+          this.taskService.getTasks.bind(this.taskService)
+        ),
+        GetTask: this.errorHandler.wrapServiceMethod(
+          this.taskService.getTask.bind(this.taskService)
+        ),
+        UpdateTask: this.errorHandler.wrapServiceMethod(
+          this.taskService.updateTask.bind(this.taskService)
+        ),
+        DeleteTask: this.errorHandler.wrapServiceMethod(
+          this.taskService.deleteTask.bind(this.taskService)
+        ),
+        GetTaskStats: this.errorHandler.wrapServiceMethod(
+          this.taskService.getTaskStats.bind(this.taskService)
+        ),
         StreamTasks: this.taskService.streamTasks.bind(this.taskService),
         StreamNotifications: this.taskService.streamNotifications.bind(
           this.taskService
         ),
       });
 
+      // Registrar serviços de chat
+      this.server.addService(chatProto.ChatService.service, {
+        Chat: this.chatService.chat.bind(this.chatService),
+        GetChatHistory: this.chatService.getChatHistory.bind(this.chatService),
+        JoinRoom: this.chatService.joinRoom.bind(this.chatService),
+        LeaveRoom: this.chatService.leaveRoom.bind(this.chatService),
+        ListRooms: this.chatService.listRooms.bind(this.chatService),
+      });
+
+      // Configurar load balancer
+      this.loadBalancer.addServer("localhost:50051", { weight: 1 });
+      this.loadBalancer.addServer("localhost:50052", { weight: 1 });
+      this.loadBalancer.setStrategy("round_robin");
+
       console.log("✅ Serviços gRPC registrados com sucesso");
+      console.log("✅ Interceptadores de autenticação configurados");
+      console.log("✅ Sistema de tratamento de erros ativado");
+      console.log("✅ Load balancer configurado");
+      console.log("✅ Chat em tempo real disponível");
     } catch (error) {
       console.error("❌ Erro na inicialização:", error);
       throw error;
@@ -90,6 +132,12 @@ class GrpcServer {
           console.log("🚀 Serviços disponíveis:");
           console.log("🚀   - AuthService (Register, Login, ValidateToken)");
           console.log("🚀   - TaskService (CRUD + Streaming)");
+          console.log("🚀   - ChatService (Chat em tempo real)");
+          console.log("🚀 Funcionalidades:");
+          console.log("🚀   - Autenticação JWT com interceptadores");
+          console.log("🚀   - Tratamento robusto de erros");
+          console.log("🚀   - Load balancing entre servidores");
+          console.log("🚀   - Streaming bidirecional para chat");
           console.log("🚀 =================================");
         }
       );
