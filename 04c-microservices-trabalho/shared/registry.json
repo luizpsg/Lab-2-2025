@@ -1,0 +1,94 @@
+{
+  "item-service": {
+    "name": "item-service",
+    "host": "localhost",
+    "port": 3002,
+    "url": "http://localhost:3002",
+    "healthEndpoint": "/health",
+    "status": "healthy",
+    "lastHealthCheck": "2025-09-22T02:08:50.881Z",
+    "registeredAt": "2025-09-22T02:01:08.682Z",
+    "metadata": {
+      "description": "Item management service",
+      "version": "1.0.0",
+      "endpoints": [
+        "GET /health",
+        "GET /items",
+        "GET /items/:id",
+        "GET /items/barcode/:barcode",
+        "GET /categories",
+        "GET /brands",
+        "GET /stats",
+        "POST /items",
+        "PUT /items/:id",
+        "DELETE /items/:id",
+        "POST /items/bulk",
+        "POST /items/search"
+      ],
+      "status": "OK",
+      "service": "item-service"
+    },
+    "circuitBreaker": {
+      "failures": 0,
+      "lastFailure": null,
+      "state": "closed",
+      "threshold": 3,
+      "timeout": 60000,
+      "halfOpenRequests": 0,
+      "maxHalfOpenRequests": 3
+    }
+  },
+  "list-service": {
+    "name": "list-service",
+    "host": "localhost",
+    "port": 3003,
+    "url": "http://localhost:3003",
+    "healthEndpoint": "/health",
+    "status": "healthy",
+    "lastHealthCheck": "2025-09-22T02:08:50.890Z",
+    "registeredAt": "2025-09-22T02:01:11.684Z",
+    "metadata": {
+      "version": "1.0.0",
+      "description": "Shopping list management service",
+      "status": "healthy",
+      "service": "list-service",
+      "timestamp": "2025-09-22T02:08:50.892Z",
+      "listsCount": 10
+    },
+    "circuitBreaker": {
+      "failures": 0,
+      "lastFailure": null,
+      "state": "closed",
+      "threshold": 3,
+      "timeout": 60000,
+      "halfOpenRequests": 0,
+      "maxHalfOpenRequests": 3
+    }
+  },
+  "user-service": {
+    "name": "user-service",
+    "host": "localhost",
+    "port": 3001,
+    "url": "http://localhost:3001",
+    "healthEndpoint": "/health",
+    "status": "healthy",
+    "lastHealthCheck": "2025-09-22T02:08:50.880Z",
+    "registeredAt": "2025-09-22T02:01:04.793Z",
+    "metadata": {
+      "version": "1.0.0",
+      "description": "User management and authentication service",
+      "status": "healthy",
+      "service": "user-service",
+      "timestamp": "2025-09-22T02:08:50.883Z"
+    },
+    "circuitBreaker": {
+      "failures": 0,
+      "lastFailure": null,
+      "state": "closed",
+      "threshold": 3,
+      "timeout": 60000,
+      "halfOpenRequests": 0,
+      "maxHalfOpenRequests": 3
+    }
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "users": {
+    "8e53183d3084407f1c67b69ad4c83685": {
+      "email": "user_1758506183022@example.com",
+      "username": "user_1758506183022",
+      "password": "$2a$10$tKPMicYZ37/6VcsTaoD9FOHbQaSaVmyYP0wIczdlRxMoRzKJCSYt.",
+      "firstName": "João",
+      "lastName": "Silva",
+      "preferences": {
+        "defaultStore": "Supermercado Central",
+        "currency": "BRL"
+      },
+      "id": "8e53183d3084407f1c67b69ad4c83685",
+      "createdAt": "2025-09-22T01:56:23.103Z",
+      "updatedAt": "2025-09-22T01:56:23.103Z"
+    },
+    "2677aee3fb817b178e16f11e1607a5d4": {
+      "email": "user_1758506294056@example.com",
+      "username": "user_1758506294056",
+      "password": "$2a$10$i82JVrTUlVM6341DyTHqf.Xg3DV5yjivIAXtdCI/WYpV6qPWLvz.2",
+      "firstName": "João",
+      "lastName": "Silva",
+      "preferences": {
+        "defaultStore": "Supermercado Central",
+        "currency": "BRL"
+      },
+      "id": "2677aee3fb817b178e16f11e1607a5d4",
+      "createdAt": "2025-09-22T01:58:14.115Z",
+      "updatedAt": "2025-09-22T01:58:14.115Z"
+    },
+    "f65c61f1929624824c2f4b89fbe8a758": {
+      "email": "user_1758506491113@example.com",
+      "username": "user_1758506491113",
+      "password": "$2a$10$E5aWDSyaQzeZtpwVyb/m1uNNLZvtmsCFIu9J.ugwlFa4NFFT.Olea",
+      "firstName": "João",
+      "lastName": "Silva",
+      "preferences": {
+        "defaultStore": "Supermercado Central",
+        "currency": "BRL"
+      },
+      "id": "f65c61f1929624824c2f4b89fbe8a758",
+      "createdAt": "2025-09-22T02:01:31.213Z",
+      "updatedAt": "2025-09-22T02:01:31.213Z"
+    },
+    "afe5a1fef885308f9fc751b98a1f6110": {
+      "email": "user_1758506557924@example.com",
+      "username": "user_1758506557924",
+      "password": "$2a$10$obyChugq69hb7Lk8A6ZH6.gl3UJWyuf63.WV31CtAQTQR6lUdzLP.",
+      "firstName": "João",
+      "lastName": "Silva",
+      "preferences": {
+        "defaultStore": "Supermercado Central",
+        "currency": "BRL"
+      },
+      "id": "afe5a1fef885308f9fc751b98a1f6110",
+      "createdAt": "2025-09-22T02:02:37.987Z",
+      "updatedAt": "2025-09-22T02:02:37.987Z"
+    },
+    "aa9b786f8eb36b4bafbd5b1006f64f1a": {
+      "email": "user_1758506637188@example.com",
+      "username": "user_1758506637188",
+      "password": "$2a$10$nHL6VdL3V/FZGOcMsbf6O.pLPmrPNjHVsyTcTYjex4.R/Uf.HU0Ee",
+      "firstName": "João",
+      "lastName": "Silva",
+      "preferences": {
+        "defaultStore": "Supermercado Central",
+        "currency": "BRL"
+      },
+      "id": "aa9b786f8eb36b4bafbd5b1006f64f1a",
+      "createdAt": "2025-09-22T02:03:57.264Z",
+      "updatedAt": "2025-09-22T02:03:57.264Z"
+    },
+    "308a48c290272c1f62cc52f465865506": {
+      "email": "test_1758506652158@example.com",
+      "username": "test_1758506652158",
+      "password": "$2a$10$Kon3KY3QJSeEe3r3iWmx2uhsw4QGeU48l/lDNYw3IyatNVoLd5XYC",
+      "firstName": "Test",
+      "lastName": "User",
+      "preferences": {
+        "defaultStore": "Test Store",
+        "currency": "BRL"
+      },
+      "id": "308a48c290272c1f62cc52f465865506",
+      "createdAt": "2025-09-22T02:04:12.238Z",
+      "updatedAt": "2025-09-22T02:04:12.238Z"
+    },
+    "114636159f7230e25f3067a1f0a733ef": {
+      "email": "test_1758506687876@example.com",
+      "username": "test_1758506687876",
+      "password": "$2a$10$TYqDF52w31kFBA1wtSkT1eprlr4LafYRAxq..9LXcdTq/OOZBHQOm",
+      "firstName": "Test",
+      "lastName": "User",
+      "preferences": {
+        "defaultStore": "Test Store",
+        "currency": "BRL"
+      },
+      "id": "114636159f7230e25f3067a1f0a733ef",
+      "createdAt": "2025-09-22T02:04:47.966Z",
+      "updatedAt": "2025-09-22T02:04:47.966Z"
+    },
+    "c7415afde5a9b95e68f4af988a121822": {
+      "email": "test_1758506718121@example.com",
+      "username": "test_1758506718121",
+      "password": "$2a$10$5cISUDti0rsn0FRB2WqNZOkOXoEZo2cTEzDCwyq/gkP3uTm0XDvgm",
+      "firstName": "Test",
+      "lastName": "User",
+      "preferences": {
+        "defaultStore": "Test Store",
+        "currency": "BRL"
+      },
+      "id": "c7415afde5a9b95e68f4af988a121822",
+      "createdAt": "2025-09-22T02:05:18.213Z",
+      "updatedAt": "2025-09-22T02:05:18.213Z"
+    },
+    "8733271bc1ba8d59818e6fd921fa5f6f": {
+      "email": "user_1758506763725@example.com",
+      "username": "user_1758506763725",
+      "password": "$2a$10$ONdEmLDqZttVYveaB58m1u3ti7/AQ/koqKRfARgeZXj.bioKe9Mim",
+      "firstName": "João",
+      "lastName": "Silva",
+      "preferences": {
+        "defaultStore": "Supermercado Central",
+        "currency": "BRL"
+      },
+      "id": "8733271bc1ba8d59818e6fd921fa5f6f",
+      "createdAt": "2025-09-22T02:06:03.785Z",
+      "updatedAt": "2025-09-22T02:06:03.785Z"
+    },
+    "a0125b3e5835d993bd2822c0e0d2bafb": {
+      "email": "user_1758506879348@example.com",
+      "username": "user_1758506879348",
+      "password": "$2a$10$TdkxUOZlXORbQgj1QvB8xu1GOyeRzTYj84ogSQ6cUcm.rwQv1PaUi",
+      "firstName": "João",
+      "lastName": "Silva",
+      "preferences": {
+        "defaultStore": "Supermercado Central",
+        "currency": "BRL"
+      },
+      "id": "a0125b3e5835d993bd2822c0e0d2bafb",
+      "createdAt": "2025-09-22T02:07:59.421Z",
+      "updatedAt": "2025-09-22T02:07:59.421Z"
+    }
+  }
+}
