@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import '../models/task.dart';
+import '../models/category.dart';
 import '../services/database_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
@@ -19,6 +21,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   String _priority = 'medium';
   bool _completed = false;
   bool _isLoading = false;
+  DateTime? _dueDate;
+  String _categoryId = 'other';
 
   @override
   void initState() {
@@ -30,6 +34,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _descriptionController.text = widget.task!.description;
       _priority = widget.task!.priority;
       _completed = widget.task!.completed;
+      _dueDate = widget.task!.dueDate;
+      _categoryId = widget.task!.categoryId;
     }
   }
 
@@ -55,6 +61,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           description: _descriptionController.text.trim(),
           priority: _priority,
           completed: _completed,
+          dueDate: _dueDate,
+          categoryId: _categoryId,
         );
         await DatabaseService.instance.create(newTask);
 
@@ -74,6 +82,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           description: _descriptionController.text.trim(),
           priority: _priority,
           completed: _completed,
+          dueDate: _dueDate,
+          clearDueDate: _dueDate == null,
+          categoryId: _categoryId,
         );
         await DatabaseService.instance.update(updatedTask);
 
@@ -167,8 +178,42 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
                     const SizedBox(height: 16),
 
+                    // Dropdown de Categoria
+                    DropdownButtonFormField<String>(
+                      value: _categoryId,
+                      decoration: const InputDecoration(
+                        labelText: 'Categoria',
+                        prefixIcon: Icon(Icons.category),
+                        border: OutlineInputBorder(),
+                      ),
+                      items: Categories.all.map((category) {
+                        return DropdownMenuItem(
+                          value: category.id,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Categories.getIconData(category.icon),
+                                color: category.color,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 12),
+                              Text(category.name),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _categoryId = value);
+                        }
+                      },
+                    ),
+
+                    const SizedBox(height: 16),
+
                     // Dropdown de Prioridade
                     DropdownButtonFormField<String>(
+                      value: _priority,
                       decoration: const InputDecoration(
                         labelText: 'Prioridade',
                         prefixIcon: Icon(Icons.flag),
@@ -221,6 +266,61 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                           setState(() => _priority = value);
                         }
                       },
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Data de Vencimento
+                    Card(
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.calendar_today,
+                          color: _dueDate != null
+                              ? Color.fromARGB(255, 61, 168, 114)
+                              : Colors.grey,
+                        ),
+                        title: const Text('Data de Vencimento'),
+                        subtitle: Text(
+                          _dueDate != null
+                              ? DateFormat('dd/MM/yyyy').format(_dueDate!)
+                              : 'Nenhuma data definida',
+                          style: TextStyle(
+                            color:
+                                _dueDate != null &&
+                                    _dueDate!.isBefore(DateTime.now())
+                                ? Colors.red
+                                : null,
+                          ),
+                        ),
+                        trailing: _dueDate != null
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  setState(() => _dueDate = null);
+                                },
+                                tooltip: 'Remover data',
+                              )
+                            : null,
+                        onTap: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: _dueDate ?? DateTime.now(),
+                            firstDate: DateTime.now().subtract(
+                              const Duration(days: 365),
+                            ),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365 * 5),
+                            ),
+                            helpText: 'Selecione a data de vencimento',
+                            cancelText: 'Cancelar',
+                            confirmText: 'Confirmar',
+                          );
+
+                          if (date != null) {
+                            setState(() => _dueDate = date);
+                          }
+                        },
+                      ),
                     ),
 
                     const SizedBox(height: 16),

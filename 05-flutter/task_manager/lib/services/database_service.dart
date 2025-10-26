@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import '../../models/task.dart';
+import '../models/task.dart';
+import '../utils/database_migration.dart';
 
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._init();
@@ -18,7 +19,17 @@ class DatabaseService {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path,
+      version: 3,
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB,
+      onOpen: (db) async {
+        // Garante que as colunas existem mesmo se a migração falhar
+        await DatabaseMigration.addDueDateColumn(db);
+        await DatabaseMigration.addCategoryIdColumn(db);
+      },
+    );
   }
 
   Future<void> _createDB(Database db, int version) async {
@@ -29,9 +40,23 @@ class DatabaseService {
         description TEXT,
         completed INTEGER NOT NULL,
         priority TEXT NOT NULL,
-        createdAt TEXT NOT NULL
+        createdAt TEXT NOT NULL,
+        dueDate TEXT,
+        categoryId TEXT NOT NULL DEFAULT 'other'
       )
     ''');
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    // Migração para versão 2 - adiciona dueDate
+    if (oldVersion < 2) {
+      await DatabaseMigration.addDueDateColumn(db);
+    }
+
+    // Migração para versão 3 - adiciona categoryId
+    if (oldVersion < 3) {
+      await DatabaseMigration.addCategoryIdColumn(db);
+    }
   }
 
   Future<Task> create(Task task) async {
@@ -50,9 +75,28 @@ class DatabaseService {
     return null;
   }
 
-  Future<List<Task>> readAll() async {
+  Future<List<Task>> readAll({String? categoryId}) async {
     final db = await database;
-    const orderBy = 'createdAt DESC';
+    // Ordena por data de vencimento (nulls no final), depois por data de criação
+    const orderBy = '''
+      CASE 
+        WHEN dueDate IS NULL THEN 1 
+        ELSE 0 
+      END,
+      dueDate ASC,
+      createdAt DESC
+    ''';
+
+    if (categoryId != null) {
+      final result = await db.query(
+        'tasks',
+        where: 'categoryId = ?',
+        whereArgs: [categoryId],
+        orderBy: orderBy,
+      );
+      return result.map((map) => Task.fromMap(map)).toList();
+    }
+
     final result = await db.query('tasks', orderBy: orderBy);
     return result.map((map) => Task.fromMap(map)).toList();
   }
@@ -70,5 +114,31 @@ class DatabaseService {
   Future<int> delete(String id) async {
     final db = await database;
     return await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
+  }
+
+  /// Limpa todas as tarefas do banco de dados
+  /// Use com cuidado - deleta todos os dados!
+  Future<void> deleteAllTasks() async {
+    final db = await database;
+    await db.delete('tasks');
+  }
+
+  /// Reseta completamente o banco de dados
+  /// Use apenas em caso de problemas de migração
+  Future<void> resetDatabase() async {
+    final dbPath = await getDatabasesPath();
+    final path = join(dbPath, 'tasks.db');
+
+    // Fecha o banco de dados atual
+    if (_database != null) {
+      await _database!.close();
+      _database = null;
+    }
+
+    // Delete o arquivo do banco de dados
+    await deleteDatabase(path);
+
+    // Recria o banco de dados
+    await database;
   }
 }

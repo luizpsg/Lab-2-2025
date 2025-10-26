@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/task.dart';
+import '../models/category.dart';
 import '../services/database_service.dart';
 import '../widgets/task_card.dart';
 import 'task_form_screen.dart';
@@ -14,6 +15,7 @@ class TaskListScreen extends StatefulWidget {
 class _TaskListScreenState extends State<TaskListScreen> {
   List<Task> _tasks = [];
   String _filter = 'all'; // all, completed, pending
+  String? _categoryFilter; // null = todas categorias
   bool _isLoading = false;
 
   @override
@@ -24,7 +26,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
   Future<void> _loadTasks() async {
     setState(() => _isLoading = true);
-    final tasks = await DatabaseService.instance.readAll();
+    final tasks = await DatabaseService.instance.readAll(
+      categoryId: _categoryFilter,
+    );
     setState(() {
       _tasks = tasks;
       _isLoading = false;
@@ -107,9 +111,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
         foregroundColor: Colors.white,
         elevation: 2,
         actions: [
-          // Filtro
+          // Filtro de Status
           PopupMenuButton<String>(
             icon: const Icon(Icons.filter_list),
+            tooltip: 'Filtrar por status',
             onSelected: (value) => setState(() => _filter = value),
             itemBuilder: (context) => [
               const PopupMenuItem(
@@ -143,6 +148,104 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 ),
               ),
             ],
+          ),
+          // Filtro de Categoria
+          PopupMenuButton<String?>(
+            icon: Icon(
+              Icons.category,
+              color: _categoryFilter != null ? Colors.amber : Colors.white,
+            ),
+            tooltip: 'Filtrar por categoria',
+            onSelected: (value) async {
+              setState(() => _categoryFilter = value);
+              await _loadTasks();
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: null,
+                child: Row(
+                  children: [
+                    Icon(Icons.clear_all),
+                    SizedBox(width: 8),
+                    Text('Todas as Categorias'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: null,
+                enabled: false,
+                child: Divider(),
+              ),
+              ...Categories.all.map((category) {
+                return PopupMenuItem(
+                  value: category.id,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Categories.getIconData(category.icon),
+                        color: category.color,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(category.name),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+          // Botão de Debug - Resetar Banco (apenas desenvolvimento)
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Resetar banco de dados',
+            onPressed: () async {
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Resetar Banco de Dados'),
+                  content: const Text(
+                    'Isso irá apagar TODAS as tarefas e recriar o banco de dados.\n\n'
+                    'Use apenas se houver problemas de migração.\n\n'
+                    'Deseja continuar?',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: const Text('Cancelar'),
+                    ),
+                    TextButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                      child: const Text('Resetar'),
+                    ),
+                  ],
+                ),
+              );
+
+              if (confirmed == true) {
+                try {
+                  await DatabaseService.instance.resetDatabase();
+                  await _loadTasks();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Banco de dados resetado com sucesso!'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Erro ao resetar: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              }
+            },
           ),
         ],
       ),
@@ -186,6 +289,13 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     'Concluídas',
                     stats['completed'].toString(),
                   ),
+                  if (stats['overdue']! > 0)
+                    _buildStatItem(
+                      Icons.warning,
+                      'Vencidas',
+                      stats['overdue'].toString(),
+                      isWarning: true,
+                    ),
                 ],
               ),
             ),
@@ -226,23 +336,41 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
   }
 
-  Widget _buildStatItem(IconData icon, String label, String value) {
+  Widget _buildStatItem(
+    IconData icon,
+    String label,
+    String value, {
+    bool isWarning = false,
+  }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, color: Colors.white, size: 32),
+        if (isWarning)
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: Colors.white, size: 24),
+          )
+        else
+          Icon(icon, color: Colors.white, size: 32),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
-            fontSize: 24,
+            fontSize: isWarning ? 20 : 24,
             fontWeight: FontWeight.bold,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(color: Colors.white70, fontSize: 12),
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: isWarning ? 10 : 12,
+          ),
         ),
       ],
     );
@@ -292,6 +420,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
       'total': _tasks.length,
       'completed': _tasks.where((t) => t.completed).length,
       'pending': _tasks.where((t) => !t.completed).length,
+      'overdue': _tasks.where((t) => t.isOverdue).length,
     };
   }
 }

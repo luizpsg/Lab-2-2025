@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/task.dart';
+import '../models/category.dart';
 
 class TaskCard extends StatelessWidget {
   final Task task;
@@ -58,15 +59,21 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
+    final dueDateFormat = DateFormat('dd/MM/yyyy');
+    final isOverdue = task.isOverdue;
+    final category = Categories.getById(task.categoryId);
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: task.completed ? 1 : 3,
+      color: isOverdue ? Colors.red.shade50 : null,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: task.completed ? Colors.grey.shade300 : _getPriorityColor(),
-          width: 2,
+          color: isOverdue
+              ? Colors.red
+              : (task.completed ? Colors.grey.shade300 : category.color),
+          width: isOverdue ? 3 : 2,
         ),
       ),
       child: InkWell(
@@ -132,8 +139,45 @@ class TaskCard extends StatelessWidget {
                     const SizedBox(height: 8),
 
                     // Metadata Row
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
+                        // Categoria
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: category.color.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: category.color,
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Categories.getIconData(category.icon),
+                                size: 16,
+                                color: category.color,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                category.name,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: category.color,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
                         // Prioridade
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -168,21 +212,75 @@ class TaskCard extends StatelessWidget {
                           ),
                         ),
 
-                        const SizedBox(width: 12),
-
-                        // Data
-                        Icon(
-                          Icons.access_time,
-                          size: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          dateFormat.format(task.createdAt),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
+                        // Data de Vencimento (se existir)
+                        if (task.dueDate != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isOverdue
+                                  ? Colors.red.shade100
+                                  : Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isOverdue ? Colors.red : Colors.blue,
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isOverdue ? Icons.warning : Icons.event,
+                                  size: 14,
+                                  color: isOverdue ? Colors.red : Colors.blue,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  dueDateFormat.format(task.dueDate!),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isOverdue ? Colors.red : Colors.blue,
+                                    fontWeight: isOverdue
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                                if (isOverdue) ...[
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'VENCIDA',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
+
+                        // Data de criação
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: Colors.grey.shade600,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              dateFormat.format(task.createdAt),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
