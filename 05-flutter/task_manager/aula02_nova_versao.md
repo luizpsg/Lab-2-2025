@@ -1,7 +1,7 @@
 # Aula 2: UI Melhorada e Navegação entre Telas
 
-**Laboratório de Desenvolvimento de Aplicações Móveis e Distribuídas**  
-**Curso de Engenharia de Software - PUC Minas**  
+**Laboratório de Desenvolvimento de Aplicações Móveis e Distribuídas**
+**Curso de Engenharia de Software - PUC Minas**
 **Duração:** 1h30m (20min teoria + 70min prática)
 
 ---
@@ -9,6 +9,7 @@
 ## 📋 Objetivos da Aula
 
 Ao final desta aula, você será capaz de:
+
 - ✅ Criar interface seguindo Material Design 3
 - ✅ Implementar navegação entre múltiplas telas
 - ✅ Desenvolver formulários completos com validação
@@ -24,6 +25,7 @@ Ao final desta aula, você será capaz de:
 **O que é Material Design 3?**
 
 Material Design 3 (também conhecido como Material You) é a terceira geração do sistema de design do Google, focado em:
+
 - **Personalização**: Temas dinâmicos baseados em cores
 - **Expressividade**: Componentes mais flexíveis e personalizáveis
 - **Acessibilidade**: Contraste aprimorado e melhor usabilidade
@@ -59,12 +61,12 @@ Material Design 3 (também conhecido como Material You) é a terceira geração 
 
 **Tipos de Navegação:**
 
-| Tipo | Uso | Método |
-|------|-----|--------|
-| **Push** | Adicionar tela | `Navigator.push()` |
-| **Pop** | Voltar | `Navigator.pop()` |
-| **Replace** | Substituir | `Navigator.pushReplacement()` |
-| **Named Routes** | Rotas nomeadas | `Navigator.pushNamed()` |
+| Tipo                   | Uso            | Método                         |
+| ---------------------- | -------------- | ------------------------------- |
+| **Push**         | Adicionar tela | `Navigator.push()`            |
+| **Pop**          | Voltar         | `Navigator.pop()`             |
+| **Replace**      | Substituir     | `Navigator.pushReplacement()` |
+| **Named Routes** | Rotas nomeadas | `Navigator.pushNamed()`       |
 
 ### 3. Formulários e Validação
 
@@ -161,7 +163,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   @override
   void initState() {
     super.initState();
-    
+  
     // Se estiver editando, preencher campos
     if (widget.task != null) {
       _titleController.text = widget.task!.title;
@@ -195,7 +197,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           completed: _completed,
         );
         await DatabaseService.instance.create(newTask);
-        
+      
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -214,7 +216,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           completed: _completed,
         );
         await DatabaseService.instance.update(updatedTask);
-        
+      
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -248,7 +250,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.task != null;
-    
+  
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Editar Tarefa' : 'Nova Tarefa'),
@@ -285,9 +287,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       },
                       maxLength: 100,
                     ),
-                    
+                  
                     const SizedBox(height: 16),
-                    
+                  
                     // Campo de Descrição
                     TextFormField(
                       controller: _descriptionController,
@@ -302,9 +304,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       maxLines: 5,
                       maxLength: 500,
                     ),
-                    
+                  
                     const SizedBox(height: 16),
-                    
+                  
                     // Dropdown de Prioridade
                     DropdownButtonFormField<String>(
                       decoration: const InputDecoration(
@@ -360,9 +362,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         }
                       },
                     ),
-                    
+                  
                     const SizedBox(height: 16),
-                    
+                  
                     // Switch de Completo
                     Card(
                       child: SwitchListTile(
@@ -382,9 +384,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         ),
                       ),
                     ),
-                    
+                  
                     const SizedBox(height: 24),
-                    
+                  
                     // Botão Salvar
                     ElevatedButton.icon(
                       onPressed: _saveTask,
@@ -399,9 +401,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                         ),
                       ),
                     ),
-                    
+                  
                     const SizedBox(height: 8),
-                    
+                  
                     // Botão Cancelar
                     OutlinedButton.icon(
                       onPressed: () => Navigator.pop(context),
@@ -490,7 +492,7 @@ class TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
-    
+  
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: task.completed ? 1 : 3,
@@ -516,9 +518,9 @@ class TaskCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(4),
                 ),
               ),
-              
+            
               const SizedBox(width: 12),
-              
+            
               // Conteúdo Principal
               Expanded(
                 child: Column(
@@ -540,7 +542,7 @@ class TaskCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    
+                  
                     if (task.description.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
@@ -558,9 +560,9 @@ class TaskCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ],
-                    
+                  
                     const SizedBox(height: 8),
-                    
+                  
                     // Metadata Row
                     Row(
                       children: [
@@ -597,9 +599,9 @@ class TaskCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        
+                      
                         const SizedBox(width: 12),
-                        
+                      
                         // Data
                         Icon(
                           Icons.access_time,
@@ -619,9 +621,9 @@ class TaskCard extends StatelessWidget {
                   ],
                 ),
               ),
-              
+            
               const SizedBox(width: 8),
-              
+            
               // Botão Deletar
               IconButton(
                 onPressed: onDelete,
@@ -719,7 +721,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
     if (confirmed == true) {
       await DatabaseService.instance.delete(task.id);
       await _loadTasks();
-      
+    
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -748,7 +750,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   Widget build(BuildContext context) {
     final filteredTasks = _filteredTasks;
     final stats = _calculateStats();
-    
+  
     return Scaffold(
       appBar: AppBar(
         title: const Text('Minhas Tarefas'),
@@ -795,7 +797,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
           ),
         ],
       ),
-      
+    
       body: Column(
         children: [
           // Card de Estatísticas
@@ -838,7 +840,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 ],
               ),
             ),
-          
+        
           // Lista de Tarefas
           Expanded(
             child: _isLoading
@@ -864,7 +866,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
           ),
         ],
       ),
-      
+    
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _openTaskForm(),
         icon: const Icon(Icons.add),
@@ -903,7 +905,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   Widget _buildEmptyState() {
     String message;
     IconData icon;
-    
+  
     switch (_filter) {
       case 'completed':
         message = 'Nenhuma tarefa concluída ainda';
@@ -917,7 +919,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         message = 'Nenhuma tarefa cadastrada';
         icon = Icons.task_alt;
     }
-    
+  
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1023,42 +1025,49 @@ flutter run
 #### 7.2 Cenários de Teste
 
 **Teste 1: Criar Nova Tarefa**
+
 1. Clique no FAB "Nova Tarefa"
 2. Preencha título, descrição e prioridade
 3. Clique em "Criar Tarefa"
 4. Verifique aparição na lista
 
 **Teste 2: Editar Tarefa**
+
 1. Toque em um card de tarefa
 2. Modifique os campos
 3. Clique em "Atualizar Tarefa"
 4. Verifique alterações
 
 **Teste 3: Validação**
+
 1. Tente criar tarefa sem título
 2. Verifique mensagem de erro
 3. Digite título com menos de 3 caracteres
 4. Verifique validação
 
 **Teste 4: Filtros**
+
 1. Crie tarefas com diferentes status
 2. Use o menu de filtros (ícone filtro)
 3. Teste "Todas", "Pendentes", "Concluídas"
 4. Verifique que apenas tarefas corretas aparecem
 
 **Teste 5: Marcar como Completa**
+
 1. Clique no checkbox de uma tarefa
 2. Veja mudança visual (riscado, cinza)
 3. Verifique estatísticas atualizadas
 4. Desmarque e veja reversão
 
 **Teste 6: Deletar Tarefa**
+
 1. Clique no ícone de lixeira
 2. Veja dialog de confirmação
 3. Confirme exclusão
 4. Verifique SnackBar de feedback
 
 **Teste 7: Prioridades**
+
 1. Crie tarefas com todas prioridades
 2. Verifique cores diferentes nos cards:
    - Verde (Baixa)
@@ -1067,18 +1076,21 @@ flutter run
    - Roxo (Urgente)
 
 **Teste 8: Pull-to-Refresh**
+
 1. Na lista, arraste para baixo
 2. Solte para recarregar
 3. Veja indicador de loading
 4. Lista é atualizada
 
 **Teste 9: Estados Vazios**
+
 1. Delete todas as tarefas
 2. Veja mensagem "Nenhuma tarefa"
 3. Aplique filtro "Concluídas" sem ter nenhuma
 4. Veja mensagem específica
 
 **Teste 10: Navegação**
+
 1. Entre no formulário
 2. Clique "Cancelar"
 3. Volte para lista sem salvar
@@ -1101,7 +1113,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Task Manager Pro',
       debugShowCheckedModeBanner: false,
-      
+    
       // Tema Claro
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -1110,7 +1122,7 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      
+    
       // Tema Escuro
       darkTheme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
@@ -1119,10 +1131,10 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      
+    
       // Seguir configuração do sistema
       themeMode: ThemeMode.system,
-      
+    
       home: const TaskListScreen(),
     );
   }
@@ -1140,7 +1152,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   
   List<Task> get _filteredTasks {
     var tasks = _tasks;
-    
+  
     // Filtro por status
     switch (_filter) {
       case 'completed':
@@ -1150,7 +1162,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         tasks = tasks.where((t) => !t.completed).toList();
         break;
     }
-    
+  
     // Filtro por busca
     if (_searchQuery.isNotEmpty) {
       tasks = tasks.where((t) {
@@ -1158,7 +1170,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                t.description.toLowerCase().contains(_searchQuery.toLowerCase());
       }).toList();
     }
-    
+  
     return tasks;
   }
   
@@ -1195,7 +1207,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
               },
             ),
           ),
-          
+        
           // ... resto do código
         ],
       ),
@@ -1215,7 +1227,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   
   List<Task> get _filteredTasks {
     var tasks = /* ... filtros existentes ... */;
-    
+  
     // Ordenação
     switch (_sortBy) {
       case 'priority':
@@ -1233,7 +1245,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
       default:
         tasks.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     }
-    
+  
     return tasks;
   }
   
@@ -1277,6 +1289,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
 ### Erro: "Cannot find package 'widgets'"
 
 **Solução:**
+
 ```bash
 # Verifique estrutura de pastas
 ls -la lib/widgets/
@@ -1351,24 +1364,25 @@ if (_formKey.currentState!.validate()) {
 
 ## 📊 Comparação: Antes vs Depois
 
-| Aspecto | Laboratório 1 | Laboratório 2 |
-|---------|---------------|---------------|
-| **Telas** | 1 (Lista) | 2 (Lista + Formulário) |
-| **Navegação** | Nenhuma | Push/Pop entre telas |
-| **Componentes** | Básicos | Material Design 3 |
-| **Formulário** | Inline simples | Completo com validação |
-| **Cards** | ListTile simples | Cards customizados |
-| **UX** | Básica | Profissional |
-| **Feedback** | Nenhum | SnackBars, Dialogs |
-| **Filtros** | Não | Sim (3 opções) |
-| **Estatísticas** | Não | Sim (card gradiente) |
-| **Animações** | Não | Transitions |
+| Aspecto                 | Laboratório 1   | Laboratório 2           |
+| ----------------------- | ---------------- | ------------------------ |
+| **Telas**         | 1 (Lista)        | 2 (Lista + Formulário)  |
+| **Navegação**   | Nenhuma          | Push/Pop entre telas     |
+| **Componentes**   | Básicos         | Material Design 3        |
+| **Formulário**   | Inline simples   | Completo com validação |
+| **Cards**         | ListTile simples | Cards customizados       |
+| **UX**            | Básica          | Profissional             |
+| **Feedback**      | Nenhum           | SnackBars, Dialogs       |
+| **Filtros**       | Não             | Sim (3 opções)         |
+| **Estatísticas** | Não             | Sim (card gradiente)     |
+| **Animações**   | Não             | Transitions              |
 
 ---
 
 ## ✅ Checklist de Verificação
 
 ### Funcionalidades Implementadas
+
 - [ ] Tela de formulário separada
 - [ ] Navegação entre telas funcionando
 - [ ] Criar nova tarefa via formulário
@@ -1387,6 +1401,7 @@ if (_formKey.currentState!.validate()) {
 - [ ] Dialogs de confirmação
 
 ### Visual e UX
+
 - [ ] Interface segue Material Design 3
 - [ ] Cores consistentes
 - [ ] Espaçamentos adequados
@@ -1397,6 +1412,7 @@ if (_formKey.currentState!.validate()) {
 - [ ] Animações suaves
 
 ### Código
+
 - [ ] Arquitetura em camadas mantida
 - [ ] Widgets separados em arquivos
 - [ ] Código comentado
@@ -1428,6 +1444,7 @@ task_manager/
 ### 2. Demonstração em Vídeo (2-3 minutos)
 
 Grave mostrando:
+
 1. **Tela inicial** - Lista com estatísticas
 2. **Criar tarefa** - Abrir formulário, preencher, salvar
 3. **Validação** - Tentar salvar sem título
@@ -1441,6 +1458,7 @@ Grave mostrando:
 ### 3. Screenshots
 
 Tire prints de:
+
 - Tela principal com tarefas
 - Card de estatísticas
 - Formulário de nova tarefa
@@ -1485,6 +1503,7 @@ Tire prints de:
 ### Exercício 1: Data de Vencimento
 
 Adicione campo de data de vencimento:
+
 - Adicione `DateTime? dueDate` ao modelo Task
 - Use `DatePicker` no formulário
 - Mostre alerta para tarefas vencidas
@@ -1493,6 +1512,7 @@ Adicione campo de data de vencimento:
 ### Exercício 2: Categorias
 
 Implemente sistema de categorias:
+
 - Crie modelo Category
 - Dropdown de categorias no formulário
 - Filtro por categoria
@@ -1501,6 +1521,7 @@ Implemente sistema de categorias:
 ### Exercício 3: Notificações Locais
 
 Adicione lembretes:
+
 - Instale `flutter_local_notifications`
 - Campo de hora do lembrete
 - Agende notificação
@@ -1509,6 +1530,7 @@ Adicione lembretes:
 ### Exercício 4: Compartilhamento
 
 Permita compartilhar tarefas:
+
 - Instale `share_plus`
 - Botão de compartilhar no card
 - Formate texto para compartilhar
@@ -1517,6 +1539,7 @@ Permita compartilhar tarefas:
 ### Exercício 5: Backup/Restore
 
 Implemente exportação de dados:
+
 - Botão de exportar para JSON
 - Salve arquivo no dispositivo
 - Botão de importar JSON
@@ -1527,21 +1550,24 @@ Implemente exportação de dados:
 ## 📚 Recursos Adicionais
 
 ### Documentação Oficial
+
 - [Material Design 3 Flutter](https://m3.material.io/develop/flutter)
 - [Navigation Cookbook](https://docs.flutter.dev/cookbook/navigation)
 - [Form Validation](https://docs.flutter.dev/cookbook/forms/validation)
 - [Gestures](https://docs.flutter.dev/cookbook/gestures)
 
 ### Packages Úteis
+
 - `intl`: Formatação de datas
 - `flutter_slidable`: Ações de deslizar
 - `animations`: Transições animadas
 - `flutter_staggered_animations`: Animações em lista
 
 ### Tutoriais Recomendados
+
 - [Material Design in Flutter](https://www.youtube.com/watch?v=DL0Ix1lnC4w)
-- [Navigation & Routing](https://www.youtube.com/watch?v=nyvwx7o277U)
-- [Forms & Validation](https://www.youtube.com/watch?v=S37yxR2O-FM)
+- [Navigation &amp; Routing](https://www.youtube.com/watch?v=nyvwx7o277U)
+- [Forms &amp; Validation](https://www.youtube.com/watch?v=S37yxR2O-FM)
 
 ---
 
@@ -1550,26 +1576,27 @@ Implemente exportação de dados:
 ### Para uma Interface de Qualidade
 
 1. **Consistência é Chave**
+
    - Use mesmas cores em todo app
    - Mantenha espaçamentos uniformes
    - Padronize tamanhos de fonte
-
 2. **Feedback Visual**
+
    - Sempre mostre loading
    - Confirme ações destrutivas
    - Use SnackBars para feedback rápido
-
 3. **Acessibilidade**
+
    - Contraste adequado de cores
    - Tamanho mínimo de toque
    - Labels descritivas
-
 4. **Performance**
+
    - Evite reconstruções desnecessárias
    - Use const constructors quando possível
    - Implemente lazy loading para listas grandes
-
 5. **Testes de Usabilidade**
+
    - Teste em diferentes tamanhos de tela
    - Peça feedback de outros usuários
    - Verifique fluxo completo
@@ -1581,6 +1608,7 @@ Implemente exportação de dados:
 ### State Management Alternativo
 
 Para apps maiores, considere:
+
 - **Provider**: Gerenciamento de estado simples
 - **Bloc**: Padrão mais robusto
 - **Riverpod**: Evolução do Provider
@@ -1589,6 +1617,7 @@ Para apps maiores, considere:
 ### Arquitetura Escalável
 
 Para projetos reais:
+
 - **Clean Architecture**: Separação em camadas
 - **MVVM**: Model-View-ViewModel
 - **Repository Pattern**: Abstração de dados
@@ -1596,6 +1625,6 @@ Para projetos reais:
 
 ---
 
-**Desenvolvido para:** PUC Minas - Engenharia de Software  
-**Disciplina:** Laboratório de Desenvolvimento de Aplicações Móveis e Distribuídas  
+**Desenvolvido para:** PUC Minas - Engenharia de Software
+**Disciplina:** Laboratório de Desenvolvimento de Aplicações Móveis e Distribuídas
 **Versão:** 2.0 - 2025

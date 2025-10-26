@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/task.dart';
 import '../models/category.dart';
 import '../services/database_service.dart';
+import '../services/notification_service.dart';
 import '../widgets/task_card.dart';
 import 'task_form_screen.dart';
 
@@ -49,6 +50,24 @@ class _TaskListScreenState extends State<TaskListScreen> {
   Future<void> _toggleTask(Task task) async {
     final updated = task.copyWith(completed: !task.completed);
     await DatabaseService.instance.update(updated);
+
+    // Cancela notificação se tarefa foi completada
+    if (updated.completed) {
+      await NotificationService.instance.cancelNotification(
+        NotificationService.getNotificationId(task.id),
+      );
+    } else if (updated.reminderTime != null) {
+      // Reagenda notificação se tarefa foi desmarcada e tem lembrete
+      await NotificationService.instance.scheduleNotification(
+        id: NotificationService.getNotificationId(updated.id),
+        title: '⏰ Lembrete: ${updated.title}',
+        body: updated.description.isEmpty
+            ? 'Você tem uma tarefa pendente'
+            : updated.description,
+        scheduledDate: updated.reminderTime!,
+      );
+    }
+
     await _loadTasks();
   }
 
@@ -74,6 +93,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
 
     if (confirmed == true) {
+      // Cancela notificação antes de deletar
+      await NotificationService.instance.cancelNotification(
+        NotificationService.getNotificationId(task.id),
+      );
+
       await DatabaseService.instance.delete(task.id);
       await _loadTasks();
 

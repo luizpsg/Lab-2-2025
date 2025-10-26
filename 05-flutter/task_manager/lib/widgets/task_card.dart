@@ -263,6 +263,42 @@ class TaskCard extends StatelessWidget {
                             ),
                           ),
 
+                        // Lembrete (se existir)
+                        if (task.reminderTime != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.purple.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.purple,
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.alarm,
+                                  size: 14,
+                                  color: Colors.purple,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  dueDateFormat.format(task.reminderTime!),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.purple,
+                                    fontWeight: FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+
                         // Data de criação
                         Row(
                           mainAxisSize: MainAxisSize.min,

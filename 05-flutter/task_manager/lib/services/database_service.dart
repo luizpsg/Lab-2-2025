@@ -21,13 +21,14 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
       onOpen: (db) async {
         // Garante que as colunas existem mesmo se a migração falhar
         await DatabaseMigration.addDueDateColumn(db);
         await DatabaseMigration.addCategoryIdColumn(db);
+        await DatabaseMigration.addReminderTimeColumn(db);
       },
     );
   }
@@ -42,7 +43,8 @@ class DatabaseService {
         priority TEXT NOT NULL,
         createdAt TEXT NOT NULL,
         dueDate TEXT,
-        categoryId TEXT NOT NULL DEFAULT 'other'
+        categoryId TEXT NOT NULL DEFAULT 'other',
+        reminderTime TEXT
       )
     ''');
   }
@@ -56,6 +58,11 @@ class DatabaseService {
     // Migração para versão 3 - adiciona categoryId
     if (oldVersion < 3) {
       await DatabaseMigration.addCategoryIdColumn(db);
+    }
+
+    // Migração para versão 4 - adiciona reminderTime
+    if (oldVersion < 4) {
+      await DatabaseMigration.addReminderTimeColumn(db);
     }
   }
 

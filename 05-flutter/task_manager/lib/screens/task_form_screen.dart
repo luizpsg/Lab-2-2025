@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../models/task.dart';
 import '../models/category.dart';
 import '../services/database_service.dart';
+import '../services/notification_service.dart';
 
 class TaskFormScreen extends StatefulWidget {
   final Task? task; // null = criar novo, não-null = editar
@@ -23,6 +24,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   bool _isLoading = false;
   DateTime? _dueDate;
   String _categoryId = 'other';
+  DateTime? _reminderTime;
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _completed = widget.task!.completed;
       _dueDate = widget.task!.dueDate;
       _categoryId = widget.task!.categoryId;
+      _reminderTime = widget.task!.reminderTime;
     }
   }
 
@@ -63,8 +66,21 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           completed: _completed,
           dueDate: _dueDate,
           categoryId: _categoryId,
+          reminderTime: _reminderTime,
         );
         await DatabaseService.instance.create(newTask);
+
+        // Agendar notificação se houver lembrete
+        if (newTask.reminderTime != null) {
+          await NotificationService.instance.scheduleNotification(
+            id: NotificationService.getNotificationId(newTask.id),
+            title: '⏰ Lembrete: ${newTask.title}',
+            body: newTask.description.isEmpty
+                ? 'Você tem uma tarefa pendente'
+                : newTask.description,
+            scheduledDate: newTask.reminderTime!,
+          );
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -85,8 +101,27 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           dueDate: _dueDate,
           clearDueDate: _dueDate == null,
           categoryId: _categoryId,
+          reminderTime: _reminderTime,
+          clearReminderTime: _reminderTime == null,
         );
         await DatabaseService.instance.update(updatedTask);
+
+        // Cancela notificação antiga
+        await NotificationService.instance.cancelNotification(
+          NotificationService.getNotificationId(updatedTask.id),
+        );
+
+        // Agenda nova notificação se houver lembrete
+        if (updatedTask.reminderTime != null && !updatedTask.completed) {
+          await NotificationService.instance.scheduleNotification(
+            id: NotificationService.getNotificationId(updatedTask.id),
+            title: '⏰ Lembrete: ${updatedTask.title}',
+            body: updatedTask.description.isEmpty
+                ? 'Você tem uma tarefa pendente'
+                : updatedTask.description,
+            scheduledDate: updatedTask.reminderTime!,
+          );
+        }
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -318,6 +353,83 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
                           if (date != null) {
                             setState(() => _dueDate = date);
+                          }
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Lembrete
+                    Card(
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.alarm,
+                          color: _reminderTime != null
+                              ? Color.fromARGB(255, 61, 168, 114)
+                              : Colors.grey,
+                        ),
+                        title: const Text('Lembrete'),
+                        subtitle: Text(
+                          _reminderTime != null
+                              ? DateFormat(
+                                  'dd/MM/yyyy HH:mm',
+                                ).format(_reminderTime!)
+                              : 'Nenhum lembrete configurado',
+                          style: TextStyle(
+                            color:
+                                _reminderTime != null &&
+                                    _reminderTime!.isBefore(DateTime.now())
+                                ? Colors.red
+                                : null,
+                          ),
+                        ),
+                        trailing: _reminderTime != null
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  setState(() => _reminderTime = null);
+                                },
+                                tooltip: 'Remover lembrete',
+                              )
+                            : null,
+                        onTap: () async {
+                          // Primeiro seleciona a data
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: _reminderTime ?? DateTime.now(),
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365 * 5),
+                            ),
+                            helpText: 'Selecione a data do lembrete',
+                            cancelText: 'Cancelar',
+                            confirmText: 'Confirmar',
+                          );
+
+                          if (date != null && mounted) {
+                            // Depois seleciona a hora
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.fromDateTime(
+                                _reminderTime ?? DateTime.now(),
+                              ),
+                              helpText: 'Selecione a hora do lembrete',
+                              cancelText: 'Cancelar',
+                              confirmText: 'Confirmar',
+                            );
+
+                            if (time != null) {
+                              setState(() {
+                                _reminderTime = DateTime(
+                                  date.year,
+                                  date.month,
+                                  date.day,
+                                  time.hour,
+                                  time.minute,
+                                );
+                              });
+                            }
                           }
                         },
                       ),

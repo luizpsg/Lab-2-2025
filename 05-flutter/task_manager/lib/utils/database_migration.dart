@@ -34,4 +34,12 @@ class DatabaseMigration {
       await db.execute('ALTER TABLE tasks ADD COLUMN dueDate TEXT');
     }
   }
+
+  /// Adiciona coluna reminderTime se não existir
+  static Future<void> addReminderTimeColumn(Database db) async {
+    final exists = await columnExists(db, 'tasks', 'reminderTime');
+    if (!exists) {
+      await db.execute('ALTER TABLE tasks ADD COLUMN reminderTime TEXT');
+    }
+  }
 }
