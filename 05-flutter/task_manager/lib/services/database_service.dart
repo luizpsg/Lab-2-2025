@@ -21,15 +21,9 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
-      onOpen: (db) async {
-        // Garante que as colunas existem mesmo se a migração falhar
-        await DatabaseMigration.addDueDateColumn(db);
-        await DatabaseMigration.addCategoryIdColumn(db);
-        await DatabaseMigration.addReminderTimeColumn(db);
-      },
     );
   }
 
@@ -44,7 +38,13 @@ class DatabaseService {
         createdAt TEXT NOT NULL,
         dueDate TEXT,
         categoryId TEXT NOT NULL DEFAULT 'other',
-        reminderTime TEXT
+        reminderTime TEXT,
+        photoPath TEXT,
+        completedAt TEXT,
+        completedBy TEXT,
+        latitude REAL,
+        longitude REAL,
+        locationName TEXT
       )
     ''');
   }
@@ -63,6 +63,14 @@ class DatabaseService {
     // Migração para versão 4 - adiciona reminderTime
     if (oldVersion < 4) {
       await DatabaseMigration.addReminderTimeColumn(db);
+    }
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE tasks ADD COLUMN photoPath TEXT');
+      await db.execute('ALTER TABLE tasks ADD COLUMN completedAt TEXT');
+      await db.execute('ALTER TABLE tasks ADD COLUMN completedBy TEXT');
+      await db.execute('ALTER TABLE tasks ADD COLUMN latitude REAL');
+      await db.execute('ALTER TABLE tasks ADD COLUMN longitude REAL');
+      await db.execute('ALTER TABLE tasks ADD COLUMN locationName TEXT');
     }
   }
 
@@ -121,6 +129,26 @@ class DatabaseService {
   Future<int> delete(String id) async {
     final db = await database;
     return await db.delete('tasks', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Método especial: buscar tarefas por proximidade
+  Future<List<Task>> getTasksNearLocation({
+    required double latitude,
+    required double longitude,
+    double radiusInMeters = 1000,
+  }) async {
+    final allTasks = await readAll();
+
+    return allTasks.where((task) {
+      if (!task.hasLocation) return false;
+
+      // Cálculo de distância usando fórmula de Haversine (simplificada)
+      final latDiff = (task.latitude! - latitude).abs();
+      final lonDiff = (task.longitude! - longitude).abs();
+      final distance = ((latDiff * 111000) + (lonDiff * 111000)) / 2;
+
+      return distance <= radiusInMeters;
+    }).toList();
   }
 
   /// Limpa todas as tarefas do banco de dados
