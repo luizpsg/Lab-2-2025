@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:uuid/uuid.dart';
 
 class Task {
@@ -12,7 +13,8 @@ class Task {
   final DateTime? reminderTime;
 
   // CÂMERA
-  final String? photoPath;
+  final String? photoPath; // Mantido para compatibilidade
+  final List<String> photoPaths; // Nova lista de fotos
 
   // SENSORES
   final DateTime? completedAt;
@@ -34,18 +36,21 @@ class Task {
     this.categoryId = 'other',
     this.reminderTime,
     this.photoPath,
+    List<String>? photoPaths,
     this.completedAt,
     this.completedBy,
     this.latitude,
     this.longitude,
     this.locationName,
   }) : id = id ?? const Uuid().v4(),
-       createdAt = createdAt ?? DateTime.now();
+       createdAt = createdAt ?? DateTime.now(),
+       photoPaths = photoPaths ?? (photoPath != null ? [photoPath] : []);
 
   // Getters auxiliares
-  bool get hasPhoto => photoPath != null && photoPath!.isNotEmpty;
+  bool get hasPhoto => photoPaths.isNotEmpty;
   bool get hasLocation => latitude != null && longitude != null;
   bool get wasCompletedByShake => completedBy == 'shake';
+  int get photoCount => photoPaths.length;
 
   bool get isOverdue {
     if (dueDate == null || completed) return false;
@@ -64,6 +69,7 @@ class Task {
       'categoryId': categoryId,
       'reminderTime': reminderTime?.toIso8601String(),
       'photoPath': photoPath,
+      'photoPaths': jsonEncode(photoPaths),
       'completedAt': completedAt?.toIso8601String(),
       'completedBy': completedBy,
       'latitude': latitude,
@@ -73,6 +79,25 @@ class Task {
   }
 
   factory Task.fromMap(Map<String, dynamic> map) {
+    // Processa photoPaths: tenta ler da nova coluna, senão usa photoPath antigo
+    List<String> photoPaths = [];
+    if (map['photoPaths'] != null && map['photoPaths'] is String) {
+      try {
+        final decoded = jsonDecode(map['photoPaths']);
+        photoPaths = List<String>.from(decoded);
+      } catch (e) {
+        // Se falhar, tenta usar photoPath antigo
+        if (map['photoPath'] != null &&
+            (map['photoPath'] as String).isNotEmpty) {
+          photoPaths = [map['photoPath'] as String];
+        }
+      }
+    } else if (map['photoPath'] != null &&
+        (map['photoPath'] as String).isNotEmpty) {
+      // Compatibilidade com versão antiga
+      photoPaths = [map['photoPath'] as String];
+    }
+
     return Task(
       id: map['id'],
       title: map['title'],
@@ -86,6 +111,7 @@ class Task {
           ? DateTime.parse(map['reminderTime'])
           : null,
       photoPath: map['photoPath'] as String?,
+      photoPaths: photoPaths,
       completedAt: map['completedAt'] != null
           ? DateTime.parse(map['completedAt'])
           : null,
@@ -107,6 +133,7 @@ class Task {
     DateTime? reminderTime,
     bool clearReminderTime = false,
     String? photoPath,
+    List<String>? photoPaths,
     DateTime? completedAt,
     String? completedBy,
     double? latitude,
@@ -126,6 +153,7 @@ class Task {
           ? null
           : (reminderTime ?? this.reminderTime),
       photoPath: photoPath ?? this.photoPath,
+      photoPaths: photoPaths ?? this.photoPaths,
       completedAt: completedAt ?? this.completedAt,
       completedBy: completedBy ?? this.completedBy,
       latitude: latitude ?? this.latitude,

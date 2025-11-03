@@ -32,7 +32,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   DateTime? _reminderTime;
 
   // CÂMERA
-  String? _photoPath;
+  String? _photoPath; // Mantido para compatibilidade
+  List<String> _photoPaths = [];
 
   // GPS
   double? _latitude;
@@ -53,6 +54,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _categoryId = widget.task!.categoryId;
       _reminderTime = widget.task!.reminderTime;
       _photoPath = widget.task!.photoPath;
+      _photoPaths = List.from(widget.task!.photoPaths);
       _latitude = widget.task!.latitude;
       _longitude = widget.task!.longitude;
       _locationName = widget.task!.locationName;
@@ -67,11 +69,81 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   }
 
   // CÂMERA METHODS
+  Future<void> _showPhotoOptions() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 20),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const Text(
+                'Escolha uma opção',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.camera_alt, color: Colors.blue),
+                ),
+                title: const Text('Tirar Foto'),
+                subtitle: const Text('Usar a câmera do dispositivo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _takePicture();
+                },
+              ),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.purple.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.photo_library, color: Colors.purple),
+                ),
+                title: const Text('Escolher da Galeria'),
+                subtitle: const Text('Selecionar foto existente'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickFromGallery();
+                },
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _takePicture() async {
     final photoPath = await CameraService.instance.takePicture(context);
 
     if (photoPath != null && mounted) {
-      setState(() => _photoPath = photoPath);
+      setState(() {
+        _photoPaths.add(photoPath);
+        _photoPath = photoPath; // Mantém compatibilidade
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -83,25 +155,60 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     }
   }
 
-  void _removePhoto() {
-    setState(() => _photoPath = null);
+  Future<void> _pickFromGallery() async {
+    final photoPath = await CameraService.instance.pickFromGallery(context);
+
+    if (photoPath != null && mounted) {
+      setState(() {
+        _photoPaths.add(photoPath);
+        _photoPath = photoPath; // Mantém compatibilidade
+      });
+    }
+  }
+
+  void _removePhoto(int index) {
+    setState(() {
+      _photoPaths.removeAt(index);
+      _photoPath = _photoPaths.isNotEmpty ? _photoPaths.last : null;
+    });
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(const SnackBar(content: Text('🗑️ Foto removida')));
   }
 
-  void _viewPhoto() {
-    if (_photoPath == null) return;
+  void _removeAllPhotos() {
+    setState(() {
+      _photoPaths.clear();
+      _photoPath = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('🗑️ Todas as fotos removidas')),
+    );
+  }
 
+  void _viewPhoto(String photoPath, int index) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => Scaffold(
           backgroundColor: Colors.black,
-          appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text('Foto ${index + 1} de ${_photoPaths.length}'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.delete),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _removePhoto(index);
+                },
+              ),
+            ],
+          ),
           body: Center(
             child: InteractiveViewer(
-              child: Image.file(File(_photoPath!), fit: BoxFit.contain),
+              child: Image.file(File(photoPath), fit: BoxFit.contain),
             ),
           ),
         ),
@@ -167,6 +274,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           categoryId: _categoryId,
           reminderTime: _reminderTime,
           photoPath: _photoPath,
+          photoPaths: _photoPaths,
           latitude: _latitude,
           longitude: _longitude,
           locationName: _locationName,
@@ -207,6 +315,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           reminderTime: _reminderTime,
           clearReminderTime: _reminderTime == null,
           photoPath: _photoPath,
+          photoPaths: _photoPaths,
           latitude: _latitude,
           longitude: _longitude,
           locationName: _locationName,
@@ -410,24 +519,24 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       },
                     ),
 
-                    // SEÇÃO FOTO
+                    // SEÇÃO FOTOS
                     Row(
                       children: [
-                        const Icon(Icons.photo_camera, color: Colors.blue),
+                        const Icon(Icons.photo_library, color: Colors.blue),
                         const SizedBox(width: 8),
-                        const Text(
-                          'Foto',
-                          style: TextStyle(
+                        Text(
+                          'Fotos${_photoPaths.isNotEmpty ? ' (${_photoPaths.length})' : ''}',
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const Spacer(),
-                        if (_photoPath != null)
+                        if (_photoPaths.isNotEmpty)
                           TextButton.icon(
-                            onPressed: _removePhoto,
+                            onPressed: _removeAllPhotos,
                             icon: const Icon(Icons.delete_outline, size: 18),
-                            label: const Text('Remover'),
+                            label: const Text('Remover Todas'),
                             style: TextButton.styleFrom(
                               foregroundColor: Colors.red,
                             ),
@@ -437,36 +546,118 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
 
                     const SizedBox(height: 12),
 
-                    if (_photoPath != null)
-                      GestureDetector(
-                        onTap: _viewPhoto,
-                        child: Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
+                    if (_photoPaths.isNotEmpty)
+                      SizedBox(
+                        height: 120,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _photoPaths.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index == _photoPaths.length) {
+                              // Botão para adicionar mais fotos
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: InkWell(
+                                  onTap: _showPhotoOptions,
+                                  child: Container(
+                                    width: 120,
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[200],
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.grey[400]!,
+                                        width: 2,
+                                        style: BorderStyle.solid,
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.add_photo_alternate,
+                                          size: 40,
+                                          color: Colors.grey[600],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Adicionar',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            final photoPath = _photoPaths[index];
+                            return Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: Stack(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () => _viewPhoto(photoPath, index),
+                                    child: Container(
+                                      width: 120,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(
+                                              0.1,
+                                            ),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.file(
+                                          File(photoPath),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 4,
+                                    right: 4,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.red,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
+                                        padding: EdgeInsets.zero,
+                                        constraints: const BoxConstraints(
+                                          minWidth: 28,
+                                          minHeight: 28,
+                                        ),
+                                        onPressed: () => _removePhoto(index),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              File(_photoPath!),
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       )
                     else
                       OutlinedButton.icon(
-                        onPressed: _takePicture,
-                        icon: const Icon(Icons.camera_alt),
-                        label: const Text('Tirar Foto'),
+                        onPressed: _showPhotoOptions,
+                        icon: const Icon(Icons.add_photo_alternate),
+                        label: const Text('Adicionar Fotos'),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.all(16),
                         ),

@@ -21,7 +21,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -40,6 +40,7 @@ class DatabaseService {
         categoryId TEXT NOT NULL DEFAULT 'other',
         reminderTime TEXT,
         photoPath TEXT,
+        photoPaths TEXT,
         completedAt TEXT,
         completedBy TEXT,
         latitude REAL,
@@ -71,6 +72,24 @@ class DatabaseService {
       await db.execute('ALTER TABLE tasks ADD COLUMN latitude REAL');
       await db.execute('ALTER TABLE tasks ADD COLUMN longitude REAL');
       await db.execute('ALTER TABLE tasks ADD COLUMN locationName TEXT');
+    }
+    // Migração para versão 6 - adiciona photoPaths para múltiplas fotos
+    if (oldVersion < 6) {
+      await db.execute('ALTER TABLE tasks ADD COLUMN photoPaths TEXT');
+      // Migra dados existentes de photoPath para photoPaths
+      final tasks = await db.query('tasks');
+      for (final task in tasks) {
+        if (task['photoPath'] != null && task['photoPath'] != '') {
+          final photoPath = task['photoPath'] as String;
+          final photoPaths = '["$photoPath"]';
+          await db.update(
+            'tasks',
+            {'photoPaths': photoPaths},
+            where: 'id = ?',
+            whereArgs: [task['id']],
+          );
+        }
+      }
     }
   }
 
