@@ -4,6 +4,7 @@ const axios = require("axios");
 const path = require("path");
 const { getRegistry } = require("../../shared/serviceRegistry");
 const JsonDatabase = require("../../shared/JsonDatabase");
+const messaging = require("../../shared/rabbitmq");
 
 const app = express();
 const PORT = process.env.PORT || 3003;
@@ -348,6 +349,66 @@ app.delete("/lists/:id/items/:itemId", authenticate, (req, res) => {
     res.json(updatedList);
   } catch (error) {
     console.error("Remove item error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Checkout list (async processing via RabbitMQ)
+app.post("/lists/:id/checkout", authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const list = db.findById("lists", id);
+
+    if (!list) {
+      return res.status(404).json({ error: "List not found" });
+    }
+
+    if (list.userId !== req.user.id) {
+      return res.status(403).json({ error: "Access denied" });
+    }
+
+    if (!list.items || list.items.length === 0) {
+      return res.status(400).json({
+        error: "Cannot checkout an empty list",
+      });
+    }
+
+    if (list.status === "completed") {
+      return res.status(409).json({
+        error: "List already completed",
+      });
+    }
+
+    const summary = calculateSummary(list.items);
+    const checkoutAt = new Date().toISOString();
+
+    const updatedList = db.update("lists", id, {
+      status: "completed",
+      summary,
+      completedAt: checkoutAt,
+    });
+
+    const eventPayload = {
+      type: "list.checkout.completed",
+      listId: id,
+      userId: req.user.id,
+      userEmail: req.user.email,
+      username: req.user.username,
+      summary,
+      items: list.items,
+      completedAt: checkoutAt,
+    };
+
+    await messaging.publish("list.checkout.completed", eventPayload);
+
+    res.status(202).json({
+      message: "Checkout recebido. Processamento assíncrono iniciado.",
+      listId: id,
+      status: updatedList.status,
+      summary: updatedList.summary,
+    });
+  } catch (error) {
+    console.error("Checkout error:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });

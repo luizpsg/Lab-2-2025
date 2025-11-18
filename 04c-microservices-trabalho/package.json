@@ -11,6 +11,9 @@
     "start:gateway": "cd api-gateway && npm start",
     "start:all": "concurrently \"npm run start:user\" \"npm run start:item\" \"npm run start:list\" \"npm run start:gateway\"",
     "demo": "node client-demo.js",
+    "worker:log": "node workers/log-consumer.js",
+    "worker:analytics": "node workers/analytics-consumer.js",
+    "workers:start": "concurrently \"npm run worker:log\" \"npm run worker:analytics\"",
     "clean": "rm -rf services/user-service/data/*.json services/item-service/data/*.json services/list-service/data/*.json shared/registry.json"
   },
   "keywords": [
@@ -21,6 +24,7 @@
   "author": "Luiz Paulo Saud Goncalves",
   "license": "ISC",
   "dependencies": {
+    "amqplib": "^0.10.3",
     "axios": "^1.6.0",
     "concurrently": "^8.2.0"
   }

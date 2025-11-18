@@ -222,7 +222,7 @@ async function updateItemStatus() {
 }
 
 async function viewListSummary() {
-  printSection("7. RESUMO DA LISTA");
+  printSection("8. RESUMO DA LISTA");
 
   const summary = await makeRequest(
     "GET",
@@ -249,8 +249,24 @@ async function viewListSummary() {
   }
 }
 
+async function checkoutList() {
+  printSection("7. FINALIZAÇÃO DE COMPRA (CHECKOUT)");
+
+  const response = await makeRequest(
+    "POST",
+    `/api/lists/${currentListId}/checkout`,
+    null,
+    true
+  );
+
+  console.log("🚀 Checkout enviado com sucesso!");
+  console.log("   Status:", response.status);
+  console.log("   Total estimado:", response.summary.estimatedTotal);
+  console.log("   Acompanhe os consumers para ver os eventos no RabbitMQ.");
+}
+
 async function viewDashboard() {
-  printSection("8. DASHBOARD AGREGADO");
+  printSection("9. DASHBOARD AGREGADO");
 
   const dashboard = await makeRequest("GET", "/api/dashboard", null, true);
 
@@ -274,7 +290,7 @@ async function viewDashboard() {
 }
 
 async function globalSearch() {
-  printSection("9. BUSCA GLOBAL");
+  printSection("10. BUSCA GLOBAL");
 
   const query = "pão";
   console.log(`🔍 Buscando por "${query}" em todo o sistema...`);
@@ -325,6 +341,9 @@ async function runDemo() {
     await delay(1000);
 
     await updateItemStatus();
+    await delay(1000);
+
+    await checkoutList();
     await delay(1000);
 
     await viewListSummary();

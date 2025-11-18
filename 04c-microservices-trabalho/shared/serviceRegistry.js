@@ -65,7 +65,16 @@ class ServiceRegistry {
   }
 
   getService(serviceName) {
-    const service = this.services[serviceName];
+    let service = this.services[serviceName];
+
+    // Reload registry from disk if we can't find the service or if it's marked
+    // as unhealthy. This keeps different Node.js processes in sync since each
+    // one maintains its own in-memory copy of the registry.
+    if (!service || service.status !== "healthy") {
+      this.loadRegistry();
+      service = this.services[serviceName];
+    }
+
     if (!service) {
       throw new Error(`Service not found: ${serviceName}`);
     }
