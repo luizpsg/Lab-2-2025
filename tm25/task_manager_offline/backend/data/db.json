@@ -1,38 +1,16 @@
 {
   "tasks": [
     {
-      "id": "7f057ed2-9bd0-4ee9-92a7-b983bbde9c5b",
-      "title": "Editei",
-      "description": "oq sera q vai rolar",
-      "completed": true,
-      "priority": "high",
-      "userId": "user1",
-      "createdAt": 1764537918397,
-      "updatedAt": 1764538654268,
-      "version": 10
-    },
-    {
-      "id": "860ed48f-baa3-4041-9e36-f1b43954f89d",
-      "title": "Item 1",
+      "id": "76b94468-7af9-4393-bdee-8f31c4fdd976",
+      "title": "aaaa",
       "description": "aa",
       "completed": false,
-      "priority": "high",
+      "priority": "medium",
       "userId": "user1",
-      "createdAt": 1764538059255,
-      "updatedAt": 1764538213186,
-      "version": 1
-    },
-    {
-      "id": "3dff3347-edb2-4883-b07a-679148201b79",
-      "title": "Item 2",
-      "description": "bb",
-      "completed": false,
-      "priority": "low",
-      "userId": "user1",
-      "createdAt": 1764538070224,
-      "updatedAt": 1764538214124,
+      "createdAt": 1764539474575,
+      "updatedAt": 1764539475790,
       "version": 1
     }
   ],
-  "lastTaskUpdate": 1764538654268
+  "lastTaskUpdate": 1764539475790
 }
