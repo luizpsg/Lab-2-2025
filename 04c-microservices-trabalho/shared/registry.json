@@ -6,7 +6,7 @@
     "url": "http://localhost:3002",
     "healthEndpoint": "/health",
     "status": "healthy",
-    "lastHealthCheck": "2025-11-18T01:03:05.656Z",
+    "lastHealthCheck": "2025-11-18T00:58:35.617Z",
     "registeredAt": "2025-11-18T00:58:35.618Z",
     "metadata": {
       "description": "Item management service",
@@ -24,36 +24,7 @@
         "DELETE /items/:id",
         "POST /items/bulk",
         "POST /items/search"
-      ],
-      "status": "OK",
-      "service": "item-service"
-    },
-    "circuitBreaker": {
-      "failures": 0,
-      "lastFailure": null,
-      "state": "closed",
-      "threshold": 3,
-      "timeout": 60000,
-      "halfOpenRequests": 0,
-      "maxHalfOpenRequests": 3
-    }
-  },
-  "list-service": {
-    "name": "list-service",
-    "host": "localhost",
-    "port": 3003,
-    "url": "http://localhost:3003",
-    "healthEndpoint": "/health",
-    "status": "healthy",
-    "lastHealthCheck": "2025-11-18T01:03:05.658Z",
-    "registeredAt": "2025-11-18T00:58:35.638Z",
-    "metadata": {
-      "version": "1.0.0",
-      "description": "Shopping list management service",
-      "status": "healthy",
-      "service": "list-service",
-      "timestamp": "2025-11-18T01:03:05.654Z",
-      "listsCount": 2
+      ]
     },
     "circuitBreaker": {
       "failures": 0,
@@ -72,14 +43,11 @@
     "url": "http://localhost:3001",
     "healthEndpoint": "/health",
     "status": "healthy",
-    "lastHealthCheck": "2025-11-18T01:03:05.659Z",
+    "lastHealthCheck": "2025-11-18T00:58:35.647Z",
     "registeredAt": "2025-11-18T00:58:35.647Z",
     "metadata": {
       "version": "1.0.0",
-      "description": "User management and authentication service",
-      "status": "healthy",
-      "service": "user-service",
-      "timestamp": "2025-11-18T01:03:05.654Z"
+      "description": "User management and authentication service"
     },
     "circuitBreaker": {
       "failures": 0,

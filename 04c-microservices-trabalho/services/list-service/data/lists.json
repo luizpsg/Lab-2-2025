@@ -133,6 +133,73 @@
       "createdAt": "2025-11-18T01:00:04.983Z",
       "updatedAt": "2025-11-18T01:00:10.790Z",
       "completedAt": "2025-11-18T01:00:10.790Z"
+    },
+    "aa5b13d7c96b239f8a014494ff8cea76": {
+      "userId": "096b15af093b535f875f3bf11d7abfae",
+      "name": "Compras da Semana",
+      "description": "Lista para fazer as compras do fim de semana",
+      "status": "completed",
+      "items": [
+        {
+          "itemId": "734bd27820cdadea9ca4748a22887700",
+          "itemName": "Arroz 5kg",
+          "quantity": 2,
+          "unit": "pacote",
+          "estimatedPrice": 25.9,
+          "purchased": true,
+          "notes": "Preferência: Tio João",
+          "addedAt": "2025-11-18T01:04:05.218Z"
+        },
+        {
+          "itemId": "4e97fbdc3a19cf8c16353389cfbaefbb",
+          "itemName": "Biscoito Recheado 140g",
+          "quantity": 1,
+          "unit": "pacote",
+          "estimatedPrice": 4.5,
+          "purchased": false,
+          "notes": "",
+          "addedAt": "2025-11-18T01:04:05.751Z"
+        },
+        {
+          "itemId": "e6b7908bf529af2f2fbc4896eb974797",
+          "itemName": "Bolo Pronto 400g",
+          "quantity": 3,
+          "unit": "unidade",
+          "estimatedPrice": 12.9,
+          "purchased": false,
+          "notes": "Integral se tiver",
+          "addedAt": "2025-11-18T01:04:06.302Z"
+        },
+        {
+          "itemId": "3f212daf94ac4188e7e5b0852fd4ecbb",
+          "itemName": "Creme Dental 90g",
+          "quantity": 2,
+          "unit": "tubo",
+          "estimatedPrice": 4.9,
+          "purchased": false,
+          "notes": "",
+          "addedAt": "2025-11-18T01:04:06.836Z"
+        },
+        {
+          "itemId": "218249e360d9faafcbaa70a020ad0676",
+          "itemName": "Macarrão Espaguete 500g",
+          "quantity": 1,
+          "unit": "pacote",
+          "estimatedPrice": 4.9,
+          "purchased": false,
+          "notes": "Folha dupla",
+          "addedAt": "2025-11-18T01:04:07.362Z"
+        }
+      ],
+      "summary": {
+        "totalItems": 5,
+        "purchasedItems": 1,
+        "estimatedTotal": 57.9
+      },
+      "id": "aa5b13d7c96b239f8a014494ff8cea76",
+      "createdAt": "2025-11-18T01:04:04.140Z",
+      "updatedAt": "2025-11-18T01:04:09.978Z",
+      "completedAt": "2025-11-18T01:04:09.978Z"
     }
   }
 }

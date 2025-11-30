@@ -279,6 +279,20 @@
       "id": "9c398198cdac622645588cc55572e56f",
       "createdAt": "2025-11-18T01:00:02.928Z",
       "updatedAt": "2025-11-18T01:00:02.928Z"
+    },
+    "096b15af093b535f875f3bf11d7abfae": {
+      "email": "user_1763427841954@example.com",
+      "username": "user_1763427841954",
+      "password": "$2a$10$dcNWg5Xad1oNrGVq0Vp3peNr/QXswxgkDgcFMybGzI2wokyFRrE6W",
+      "firstName": "João",
+      "lastName": "Silva",
+      "preferences": {
+        "defaultStore": "Supermercado Central",
+        "currency": "BRL"
+      },
+      "id": "096b15af093b535f875f3bf11d7abfae",
+      "createdAt": "2025-11-18T01:04:02.050Z",
+      "updatedAt": "2025-11-18T01:04:02.050Z"
     }
   }
 }
