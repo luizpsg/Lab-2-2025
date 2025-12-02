@@ -163,14 +163,19 @@ class SyncService {
       );
     }
 
+    print(
+        '📤 Enviando update: ${task.id} (v${task.version}, local: ${task.localUpdatedAt})');
+
     final result = await _api.updateTask(task);
 
     if (result['conflict'] == true) {
-      // Conflito detectado - aplicar Last-Write-Wins
+      // Conflito detectado - aplicar Last-Write-Wins baseado em timestamp
       final serverTask = result['serverTask'] as Task;
+      print(
+          '⚠️ Conflito de versão no push: local v${task.version} vs servidor v${serverTask.version}');
       await _resolveConflict(task, serverTask);
     } else {
-      // Sucesso - atualizar local
+      // Sucesso - atualizar local com dados do servidor
       final updatedTask = result['task'] as Task;
       await _db.upsertTask(
         task.copyWith(
@@ -212,10 +217,27 @@ class SyncService {
           serverTask.copyWith(syncStatus: SyncStatus.synced),
         );
       } else if (localTask.syncStatus == SyncStatus.synced) {
-        // Atualização do servidor (sem modificações locais)
-        await _db.upsertTask(
-          serverTask.copyWith(syncStatus: SyncStatus.synced),
-        );
+        // Tarefa local está sincronizada - verificar timestamps para LWW
+        final localTime = localTask.localUpdatedAt ?? localTask.updatedAt;
+        final serverTime = serverTask.updatedAt;
+
+        if (serverTime.isAfter(localTime)) {
+          // Servidor é mais recente - sobrescrever local
+          print(
+              '📥 Servidor mais recente para ${serverTask.id} - atualizando local');
+          await _db.upsertTask(
+            serverTask.copyWith(syncStatus: SyncStatus.synced),
+          );
+        } else {
+          // Local é mais recente ou igual - manter local e atualizar version
+          print('📥 Local mais recente para ${serverTask.id} - mantendo local');
+          await _db.upsertTask(
+            localTask.copyWith(
+              version: serverTask.version,
+              syncStatus: SyncStatus.synced,
+            ),
+          );
+        }
       } else {
         // Possível conflito - resolver
         await _resolveConflict(localTask, serverTask);
@@ -230,6 +252,9 @@ class SyncService {
   /// Resolver conflito usando Last-Write-Wins
   Future<void> _resolveConflict(Task localTask, Task serverTask) async {
     print('⚠️ Conflito detectado: ${localTask.id}');
+    print(
+        '   Local: ${localTask.localUpdatedAt ?? localTask.updatedAt} (v${localTask.version})');
+    print('   Servidor: ${serverTask.updatedAt} (v${serverTask.version})');
 
     final localTime = localTask.localUpdatedAt ?? localTask.updatedAt;
     final serverTime = serverTask.updatedAt;
@@ -238,13 +263,33 @@ class SyncService {
     String reason;
 
     if (localTime.isAfter(serverTime)) {
-      // Versão local vence
+      // Versão local vence - precisa enviar para o servidor com a version correta
       reason = 'Modificação local é mais recente';
       print('🏆 LWW: Versão local vence');
 
-      final result = await _api.updateTask(localTask);
+      // Usar a version do servidor para evitar conflito de versão
+      final taskToSend = localTask.copyWith(
+        version: serverTask.version,
+        updatedAt: localTask.localUpdatedAt ?? localTask.updatedAt,
+      );
+
+      final result = await _api.updateTask(taskToSend);
       if (result['conflict'] == true) {
-        winningTask = localTask;
+        // Ainda há conflito - tentar forçar com version incrementada
+        print('⚠️ Conflito persistente - forçando atualização');
+        final serverVersion = (result['serverTask'] as Task).version;
+        final forcedTask = localTask.copyWith(version: serverVersion);
+        final retryResult = await _api.updateTask(forcedTask);
+
+        if (retryResult['conflict'] == true) {
+          // Se ainda falhar, manter local como vencedor
+          winningTask = localTask.copyWith(
+            version: serverVersion + 1,
+            syncStatus: SyncStatus.synced,
+          );
+        } else {
+          winningTask = retryResult['task'] as Task;
+        }
       } else {
         winningTask = result['task'] as Task;
       }
