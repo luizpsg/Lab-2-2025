@@ -5,12 +5,18 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 import '../screens/camera_screen.dart';
+import 'cloud_service.dart';
 
 class CameraService {
   static final CameraService instance = CameraService._init();
   CameraService._init();
 
   List<CameraDescription>? _cameras;
+  
+  // Controle de upload automático para S3
+  bool _autoUploadEnabled = true;
+  bool get autoUploadEnabled => _autoUploadEnabled;
+  set autoUploadEnabled(bool value) => _autoUploadEnabled = value;
 
   Future<void> initialize() async {
     try {
@@ -152,4 +158,109 @@ class CameraService {
       return false;
     }
   }
+
+  /// Faz upload de uma foto para o S3 (LocalStack)
+  /// Retorna o resultado do upload contendo a URL da imagem no S3
+  Future<PhotoUploadResult> uploadToCloud(String localPath) async {
+    try {
+      final file = File(localPath);
+      if (!await file.exists()) {
+        return PhotoUploadResult(
+          success: false,
+          error: 'Arquivo não encontrado',
+          localPath: localPath,
+        );
+      }
+
+      print('☁️ Fazendo upload para S3: $localPath');
+      
+      final result = await CloudService.instance.uploadImage(file);
+      
+      if (result != null && result.success) {
+        print('✅ Upload S3 concluído: ${result.key}');
+        return PhotoUploadResult(
+          success: true,
+          localPath: localPath,
+          cloudKey: result.key,
+          cloudUrl: result.url,
+        );
+      } else {
+        return PhotoUploadResult(
+          success: false,
+          error: result?.error ?? 'Erro desconhecido',
+          localPath: localPath,
+        );
+      }
+    } catch (e) {
+      print('❌ Erro ao fazer upload para S3: $e');
+      return PhotoUploadResult(
+        success: false,
+        error: e.toString(),
+        localPath: localPath,
+      );
+    }
+  }
+
+  /// Faz upload de múltiplas fotos para o S3
+  Future<List<PhotoUploadResult>> uploadMultipleToCloud(List<String> localPaths) async {
+    final results = <PhotoUploadResult>[];
+    
+    for (final path in localPaths) {
+      final result = await uploadToCloud(path);
+      results.add(result);
+    }
+    
+    return results;
+  }
+
+  /// Tira uma foto e automaticamente faz upload para o S3 se autoUpload estiver habilitado
+  Future<PhotoCaptureResult?> takePictureWithCloud(BuildContext context) async {
+    final localPath = await takePicture(context);
+    
+    if (localPath == null) return null;
+    
+    PhotoUploadResult? cloudResult;
+    if (_autoUploadEnabled) {
+      final isOnline = await CloudService.instance.isOnline();
+      if (isOnline) {
+        cloudResult = await uploadToCloud(localPath);
+      }
+    }
+    
+    return PhotoCaptureResult(
+      localPath: localPath,
+      cloudResult: cloudResult,
+    );
+  }
+}
+
+/// Resultado do upload de uma foto para o S3
+class PhotoUploadResult {
+  final bool success;
+  final String localPath;
+  final String? cloudKey;
+  final String? cloudUrl;
+  final String? error;
+
+  PhotoUploadResult({
+    required this.success,
+    required this.localPath,
+    this.cloudKey,
+    this.cloudUrl,
+    this.error,
+  });
+}
+
+/// Resultado da captura de foto com upload opcional para cloud
+class PhotoCaptureResult {
+  final String localPath;
+  final PhotoUploadResult? cloudResult;
+  
+  PhotoCaptureResult({
+    required this.localPath,
+    this.cloudResult,
+  });
+  
+  bool get uploadedToCloud => cloudResult?.success ?? false;
+  String? get cloudUrl => cloudResult?.cloudUrl;
 }

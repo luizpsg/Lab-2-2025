@@ -25,6 +25,11 @@ class Task {
   final double? longitude;
   final String? locationName;
 
+  // CLOUD (LocalStack S3)
+  final List<String> cloudPhotoUrls; // URLs das fotos no S3
+  final List<String> cloudPhotoKeys; // Keys das fotos no S3
+  final bool syncedToCloud; // Se a tarefa foi sincronizada com DynamoDB
+
   Task({
     String? id,
     required this.title,
@@ -42,15 +47,22 @@ class Task {
     this.latitude,
     this.longitude,
     this.locationName,
+    List<String>? cloudPhotoUrls,
+    List<String>? cloudPhotoKeys,
+    this.syncedToCloud = false,
   }) : id = id ?? const Uuid().v4(),
        createdAt = createdAt ?? DateTime.now(),
-       photoPaths = photoPaths ?? (photoPath != null ? [photoPath] : []);
+       photoPaths = photoPaths ?? (photoPath != null ? [photoPath] : []),
+       cloudPhotoUrls = cloudPhotoUrls ?? [],
+       cloudPhotoKeys = cloudPhotoKeys ?? [];
 
   // Getters auxiliares
   bool get hasPhoto => photoPaths.isNotEmpty;
   bool get hasLocation => latitude != null && longitude != null;
   bool get wasCompletedByShake => completedBy == 'shake';
   int get photoCount => photoPaths.length;
+  bool get hasCloudPhotos => cloudPhotoUrls.isNotEmpty;
+  int get cloudPhotoCount => cloudPhotoUrls.length;
 
   bool get isOverdue {
     if (dueDate == null || completed) return false;
@@ -75,6 +87,32 @@ class Task {
       'latitude': latitude,
       'longitude': longitude,
       'locationName': locationName,
+      'cloudPhotoUrls': jsonEncode(cloudPhotoUrls),
+      'cloudPhotoKeys': jsonEncode(cloudPhotoKeys),
+      'syncedToCloud': syncedToCloud ? 1 : 0,
+    };
+  }
+
+  /// Converte para Map compatível com DynamoDB/API
+  Map<String, dynamic> toCloudMap() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'completed': completed,
+      'priority': priority,
+      'createdAt': createdAt.toIso8601String(),
+      'dueDate': dueDate?.toIso8601String(),
+      'categoryId': categoryId,
+      'reminderTime': reminderTime?.toIso8601String(),
+      'photoPaths': photoPaths,
+      'cloudPhotoUrls': cloudPhotoUrls,
+      'cloudPhotoKeys': cloudPhotoKeys,
+      'latitude': latitude,
+      'longitude': longitude,
+      'locationName': locationName,
+      'completedAt': completedAt?.toIso8601String(),
+      'completedBy': completedBy,
     };
   }
 
@@ -92,17 +130,43 @@ class Task {
           photoPaths = [map['photoPath'] as String];
         }
       }
+    } else if (map['photoPaths'] != null && map['photoPaths'] is List) {
+      photoPaths = List<String>.from(map['photoPaths']);
     } else if (map['photoPath'] != null &&
         (map['photoPath'] as String).isNotEmpty) {
       // Compatibilidade com versão antiga
       photoPaths = [map['photoPath'] as String];
     }
 
+    // Processa cloudPhotoUrls
+    List<String> cloudPhotoUrls = [];
+    if (map['cloudPhotoUrls'] != null && map['cloudPhotoUrls'] is String) {
+      try {
+        cloudPhotoUrls = List<String>.from(jsonDecode(map['cloudPhotoUrls']));
+      } catch (e) {
+        cloudPhotoUrls = [];
+      }
+    } else if (map['cloudPhotoUrls'] != null && map['cloudPhotoUrls'] is List) {
+      cloudPhotoUrls = List<String>.from(map['cloudPhotoUrls']);
+    }
+
+    // Processa cloudPhotoKeys
+    List<String> cloudPhotoKeys = [];
+    if (map['cloudPhotoKeys'] != null && map['cloudPhotoKeys'] is String) {
+      try {
+        cloudPhotoKeys = List<String>.from(jsonDecode(map['cloudPhotoKeys']));
+      } catch (e) {
+        cloudPhotoKeys = [];
+      }
+    } else if (map['cloudPhotoKeys'] != null && map['cloudPhotoKeys'] is List) {
+      cloudPhotoKeys = List<String>.from(map['cloudPhotoKeys']);
+    }
+
     return Task(
       id: map['id'],
       title: map['title'],
       description: map['description'] ?? '',
-      completed: map['completed'] == 1,
+      completed: map['completed'] == 1 || map['completed'] == true,
       priority: map['priority'] ?? 'medium',
       createdAt: DateTime.parse(map['createdAt']),
       dueDate: map['dueDate'] != null ? DateTime.parse(map['dueDate']) : null,
@@ -119,6 +183,9 @@ class Task {
       latitude: map['latitude'] as double?,
       longitude: map['longitude'] as double?,
       locationName: map['locationName'] as String?,
+      cloudPhotoUrls: cloudPhotoUrls,
+      cloudPhotoKeys: cloudPhotoKeys,
+      syncedToCloud: map['syncedToCloud'] == 1 || map['syncedToCloud'] == true,
     );
   }
 
@@ -139,6 +206,9 @@ class Task {
     double? latitude,
     double? longitude,
     String? locationName,
+    List<String>? cloudPhotoUrls,
+    List<String>? cloudPhotoKeys,
+    bool? syncedToCloud,
   }) {
     return Task(
       id: id,
@@ -159,6 +229,9 @@ class Task {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       locationName: locationName ?? this.locationName,
+      cloudPhotoUrls: cloudPhotoUrls ?? this.cloudPhotoUrls,
+      cloudPhotoKeys: cloudPhotoKeys ?? this.cloudPhotoKeys,
+      syncedToCloud: syncedToCloud ?? this.syncedToCloud,
     );
   }
 }

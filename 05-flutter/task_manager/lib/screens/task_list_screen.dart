@@ -6,6 +6,7 @@ import '../services/notification_service.dart';
 import '../services/location_service.dart';
 import '../services/sensor_service.dart';
 import '../screens/task_form_screen.dart';
+import '../screens/cloud_status_screen.dart';
 import '../widgets/task_card.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -298,6 +299,17 @@ class _TaskListScreenState extends State<TaskListScreen> {
         foregroundColor: Colors.white,
         elevation: 2,
         actions: [
+          // Cloud Status
+          IconButton(
+            icon: const Icon(Icons.cloud),
+            tooltip: 'Status do Cloud (LocalStack)',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CloudStatusScreen()),
+              );
+            },
+          ),
           // Filtro de Status
           PopupMenuButton<String>(
             icon: const Icon(Icons.filter_list),

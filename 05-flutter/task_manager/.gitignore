@@ -43,3 +43,9 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# LocalStack data
+localstack-data/
+
+# Backend Node.js
+backend/node_modules/

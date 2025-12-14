@@ -21,7 +21,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -45,7 +45,10 @@ class DatabaseService {
         completedBy TEXT,
         latitude REAL,
         longitude REAL,
-        locationName TEXT
+        locationName TEXT,
+        cloudPhotoUrls TEXT,
+        cloudPhotoKeys TEXT,
+        syncedToCloud INTEGER DEFAULT 0
       )
     ''');
   }
@@ -90,6 +93,15 @@ class DatabaseService {
           );
         }
       }
+    }
+
+    // Migração para versão 7 - adiciona suporte a Cloud (LocalStack S3/DynamoDB)
+    if (oldVersion < 7) {
+      await db.execute('ALTER TABLE tasks ADD COLUMN cloudPhotoUrls TEXT');
+      await db.execute('ALTER TABLE tasks ADD COLUMN cloudPhotoKeys TEXT');
+      await db.execute(
+        'ALTER TABLE tasks ADD COLUMN syncedToCloud INTEGER DEFAULT 0',
+      );
     }
   }
 

@@ -8,6 +8,7 @@ import '../services/database_service.dart';
 import '../services/notification_service.dart';
 import '../services/camera_service.dart';
 import '../services/location_service.dart';
+import '../services/cloud_service.dart';
 import '../widgets/location_picker.dart';
 
 class TaskFormScreen extends StatefulWidget {
@@ -40,6 +41,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   double? _longitude;
   String? _locationName;
 
+  // CLOUD
+  List<String> _cloudPhotoUrls = [];
+  List<String> _cloudPhotoKeys = [];
+  bool _syncToCloud = true; // Sincronizar com LocalStack por padrão
+  bool _isUploadingToCloud = false;
+
   @override
   void initState() {
     super.initState();
@@ -58,6 +65,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       _latitude = widget.task!.latitude;
       _longitude = widget.task!.longitude;
       _locationName = widget.task!.locationName;
+      _cloudPhotoUrls = List.from(widget.task!.cloudPhotoUrls);
+      _cloudPhotoKeys = List.from(widget.task!.cloudPhotoKeys);
     }
   }
 
@@ -255,6 +264,76 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     ).showSnackBar(const SnackBar(content: Text('📍 Localização removida')));
   }
 
+  // CLOUD METHODS
+  Future<void> _uploadPhotosToCloud() async {
+    if (!await CloudService.instance.isOnline()) {
+      print('⚠️ Backend offline, pulando upload para cloud');
+      return;
+    }
+
+    setState(() => _isUploadingToCloud = true);
+
+    try {
+      // Fazer upload apenas das fotos que ainda não estão na cloud
+      for (int i = 0; i < _photoPaths.length; i++) {
+        final localPath = _photoPaths[i];
+
+        // Verificar se já tem uma URL correspondente
+        if (i < _cloudPhotoUrls.length && _cloudPhotoUrls[i].isNotEmpty) {
+          continue; // Já foi feito upload
+        }
+
+        final result = await CameraService.instance.uploadToCloud(localPath);
+
+        if (result.success &&
+            result.cloudUrl != null &&
+            result.cloudKey != null) {
+          // Adicionar ou atualizar nas listas
+          if (i < _cloudPhotoUrls.length) {
+            _cloudPhotoUrls[i] = result.cloudUrl!;
+            _cloudPhotoKeys[i] = result.cloudKey!;
+          } else {
+            _cloudPhotoUrls.add(result.cloudUrl!);
+            _cloudPhotoKeys.add(result.cloudKey!);
+          }
+
+          print('☁️ Foto $i uploaded: ${result.cloudKey}');
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '☁️ ${_cloudPhotoUrls.length} foto(s) sincronizada(s) com S3',
+            ),
+            backgroundColor: Colors.blue,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Erro ao fazer upload para cloud: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingToCloud = false);
+      }
+    }
+  }
+
+  Future<void> _syncTaskToCloud(Task task) async {
+    if (!await CloudService.instance.isOnline()) {
+      return;
+    }
+
+    try {
+      await CloudService.instance.syncTask(task.toCloudMap());
+      print('☁️ Tarefa sincronizada com DynamoDB: ${task.id}');
+    } catch (e) {
+      print('❌ Erro ao sincronizar tarefa com cloud: $e');
+    }
+  }
+
   Future<void> _saveTask() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -263,6 +342,11 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     setState(() => _isLoading = true);
 
     try {
+      // Upload de fotos para S3 se habilitado
+      if (_syncToCloud && _photoPaths.isNotEmpty) {
+        await _uploadPhotosToCloud();
+      }
+
       if (widget.task == null) {
         // Criar nova tarefa
         final newTask = Task(
@@ -278,8 +362,16 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           latitude: _latitude,
           longitude: _longitude,
           locationName: _locationName,
+          cloudPhotoUrls: _cloudPhotoUrls,
+          cloudPhotoKeys: _cloudPhotoKeys,
+          syncedToCloud: _syncToCloud && _cloudPhotoUrls.isNotEmpty,
         );
         await DatabaseService.instance.create(newTask);
+
+        // Sincronizar com DynamoDB
+        if (_syncToCloud) {
+          await _syncTaskToCloud(newTask);
+        }
 
         // Agendar notificação se houver lembrete
         if (newTask.reminderTime != null) {
@@ -319,8 +411,16 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           latitude: _latitude,
           longitude: _longitude,
           locationName: _locationName,
+          cloudPhotoUrls: _cloudPhotoUrls,
+          cloudPhotoKeys: _cloudPhotoKeys,
+          syncedToCloud: _syncToCloud && _cloudPhotoUrls.isNotEmpty,
         );
         await DatabaseService.instance.update(updatedTask);
+
+        // Sincronizar com DynamoDB
+        if (_syncToCloud) {
+          await _syncTaskToCloud(updatedTask);
+        }
 
         // Cancela notificação antiga
         await NotificationService.instance.cancelNotification(
@@ -878,11 +978,46 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                       ),
                     ),
 
+                    const SizedBox(height: 16),
+
+                    // Switch Sync com Cloud
+                    Card(
+                      color: Colors.blue[50],
+                      child: SwitchListTile(
+                        title: const Text('☁️ Sincronizar com Cloud'),
+                        subtitle: Text(
+                          _syncToCloud
+                              ? 'Fotos serão enviadas para S3 (LocalStack)'
+                              : 'Apenas armazenamento local',
+                        ),
+                        value: _syncToCloud,
+                        onChanged: (value) {
+                          setState(() => _syncToCloud = value);
+                        },
+                        secondary: Icon(
+                          _syncToCloud ? Icons.cloud_upload : Icons.cloud_off,
+                          color: _syncToCloud ? Colors.blue : Colors.grey,
+                        ),
+                      ),
+                    ),
+
+                    if (_isUploadingToCloud)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Column(
+                          children: [
+                            CircularProgressIndicator(),
+                            SizedBox(height: 8),
+                            Text('Enviando fotos para S3...'),
+                          ],
+                        ),
+                      ),
+
                     const SizedBox(height: 24),
 
                     // Botão Salvar
                     ElevatedButton.icon(
-                      onPressed: _saveTask,
+                      onPressed: _isUploadingToCloud ? null : _saveTask,
                       icon: const Icon(Icons.save),
                       label: Text(
                         isEditing ? 'Atualizar Tarefa' : 'Criar Tarefa',
