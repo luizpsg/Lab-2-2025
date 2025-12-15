@@ -6,7 +6,7 @@ services:
     container_name: localstack-task-manager
     ports:
       - "4566:4566" # LocalStack Gateway
-      - "4510-4559:4510-4559" # External services port range
+      # Range de portas externas removida para evitar conflito com o Cursor IDE
     environment:
       - SERVICES=s3,dynamodb,sqs,sns
       - DEBUG=1
